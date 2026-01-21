@@ -18,11 +18,13 @@ using System.Collections;
      private float jumpPos = 0.0f;
      private int clawC = 0;
 
+
      void Start()
      {
           //コンポーネントのインスタンスを捕まえる
           anim = GetComponent<Animator>();
           rb = GetComponent<Rigidbody2D>();
+
       }
 
       void FixedUpdate()
@@ -38,7 +40,7 @@ using System.Collections;
 
           if (isGround)
           {
-              if (verticalKey > 0)
+              if (Input.GetButton("Jump"))
               {
                   ySpeed = jumpSpeed;
                   jumpPos = transform.position.y; //ジャンプした位置を記録する
@@ -64,6 +66,7 @@ using System.Collections;
               }
           }
           if(Input.GetKeyDown(KeyCode.X)){
+            GetComponent<AudioSource>().Play();
             clawC += 1;
             clawC = clawC%2;
             StartCoroutine(ClawAnimation());
