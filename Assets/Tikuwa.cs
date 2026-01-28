@@ -13,10 +13,18 @@ using System.Collections;
      //プライベート変数
      private Animator anim = null;
      private Rigidbody2D rb = null;
+     private AudioSource audioSource = null;
      private bool isGround = false;
      private bool isJump = false;
      private float jumpPos = 0.0f;
      private int clawC = 0;
+
+     private float horizontalKey;
+     private bool jumpPressed;
+     private bool jumpHeld;
+     private bool clawPressed;
+     private bool shotHeld;
+     float ySpeed = 0.0f;
 
 
      void Start()
@@ -24,8 +32,20 @@ using System.Collections;
           //コンポーネントのインスタンスを捕まえる
           anim = GetComponent<Animator>();
           rb = GetComponent<Rigidbody2D>();
+          audioSource = GetComponent<AudioSource>();
 
       }
+
+      void Update()
+    {
+        horizontalKey = Input.GetAxisRaw("Horizontal");
+
+        jumpPressed = Input.GetButtonDown("Jump");
+        jumpHeld = Input.GetButton("Jump");
+
+        clawPressed = Input.GetKeyDown(KeyCode.X);
+        shotHeld = Input.GetKey(KeyCode.Z);
+    }
 
       void FixedUpdate()
       {
@@ -33,14 +53,12 @@ using System.Collections;
           isGround = ground.IsGround();
 
           //キー入力されたら行動する
-          float horizontalKey = Input.GetAxis("Horizontal");
-          float xSpeed = 0.0f;
-          float ySpeed = -gravity;
-          float verticalKey = Input.GetAxis("Vertical");
+          float xSpeed = horizontalKey * speed;
 
           if (isGround)
           {
-              if (Input.GetButton("Jump"))
+            ySpeed = 0;
+              if (jumpPressed)
               {
                   ySpeed = jumpSpeed;
                   jumpPos = transform.position.y; //ジャンプした位置を記録する
@@ -56,19 +74,20 @@ using System.Collections;
           else if (isJump)
           {
               //上ボタンを押されている。かつ、現在の高さがジャンプした位置から自分の決めた位置より下ならジャンプを継続する
-              if (verticalKey > 0 && jumpPos + jumpHeight > transform.position.y)
+              if (jumpHeld && jumpPos + jumpHeight > transform.position.y)
               {
                   ySpeed = jumpSpeed;
               }
               else
               {
+                ySpeed = -gravity;
                   isJump = false;
               }
           }
-          if(Input.GetKeyDown(KeyCode.X)){
-            GetComponent<AudioSource>().Play();
-            clawC += 1;
-            clawC = clawC%2;
+          if(clawPressed){
+
+            audioSource.Play();
+            clawC = (clawC + 1)%2;
             StartCoroutine(ClawAnimation());
             
           }
