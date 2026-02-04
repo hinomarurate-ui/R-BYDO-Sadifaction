@@ -4,7 +4,19 @@ using UnityEngine;
 
 public class EnemyHP : MonoBehaviour
 {
+    Collider2D co;
+    Rigidbody2D rb;
     int HP;
+    private Animator anim = null;
+
+    void Start()
+    {
+       anim = GetComponent<Animator>();
+       co = GetComponent<Collider2D>();
+       rb = GetComponent<Rigidbody2D>();
+
+    }
+
 
     public void Init(EnemyStatus ES)
     {
@@ -16,8 +28,24 @@ public class EnemyHP : MonoBehaviour
         HP -= damage;
         StartCoroutine(Flash());
         if(HP < 0){
-            Destroy(gameObject);
+            DeathAnim();
         }
+    }
+
+    void DeathAnim()
+    {
+        //this.Physics2DLayerMask = Default;
+        anim.SetTrigger("Death");
+
+        Vector2 impulse = new Vector2(1,0f) * 8 + Vector2.up * 5;
+        rb.AddForce(impulse, ForceMode2D.Impulse);
+
+
+    }
+
+    public void DestroyYYYYY()
+    {
+        Destroy(gameObject);
     }
 
     private IEnumerator Flash()

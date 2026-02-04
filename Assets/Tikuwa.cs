@@ -20,11 +20,21 @@ using System.Collections;
      private int clawC = 0;
 
      private float horizontalKey;
-     private bool jumpPressed;
      private bool jumpHeld;
-     private bool clawPressed;
      private bool shotHeld;
      float ySpeed = 0.0f;
+
+     [Header("Melee")]
+     [SerializeField] Transform meleePoint;
+     [SerializeField] float meleeRadius = 0.6f;
+     [SerializeField] LayerMask enemyLayers;
+     [SerializeField] int meleeDamage = 1;
+     [SerializeField] float meleeCooltime = 0.25f;
+     [SerializeField] float hitDelay = 0.03f;
+
+     float lastMeleeTime = -999f;
+     bool JumpQueed;
+     bool MeleeQueed;
 
 
      void Start()
@@ -36,16 +46,21 @@ using System.Collections;
 
       }
 
-      void Update()
-    {
+     void Update()
+     {
         horizontalKey = Input.GetAxisRaw("Horizontal");
 
-        jumpPressed = Input.GetButtonDown("Jump");
+        if(Input.GetButtonDown("Jump"))
+        JumpQueed = true;
+
+        
         jumpHeld = Input.GetButton("Jump");
 
-        clawPressed = Input.GetKeyDown(KeyCode.X);
+        if (Input.GetKeyDown(KeyCode.X))
+        MeleeQueed = true;
+
         shotHeld = Input.GetKey(KeyCode.Z);
-    }
+     }
 
       void FixedUpdate()
       {
@@ -58,8 +73,9 @@ using System.Collections;
           if (isGround)
           {
             ySpeed = 0;
-              if (jumpPressed)
+              if (JumpQueed)
               {
+                  JumpQueed = false;
                   ySpeed = jumpSpeed;
                   jumpPos = transform.position.y; //ジャンプした位置を記録する
                   isJump = true;
@@ -84,12 +100,10 @@ using System.Collections;
                   isJump = false;
               }
           }
-          if(clawPressed){
+          if(MeleeQueed){
 
-            audioSource.Play();
-            clawC = (clawC + 1)%2;
-            StartCoroutine(ClawAnimation());
-            
+            MeleeQueed = false;
+            TryMelee();
           }
           if (horizontalKey > 0)
           {
@@ -118,15 +132,47 @@ using System.Collections;
       }
 
       IEnumerator ClawAnimation(){
-        if(clawC == 0){
-        anim.SetBool("Claw", true);
-        yield return new WaitForSeconds(0.1f);
-        anim.SetBool("Claw", false);
-        }
-        else{
-        anim.SetBool("ClawP", true);
-        yield return new WaitForSeconds(0.1f);
+        if(clawC == 0) anim.SetBool("Claw", true);
+        else anim.SetBool("ClawP", true); 
+
+        if (hitDelay > 0f) yield return new WaitForSeconds(hitDelay);
+
+        DoMeleeHit();
+        float rest = Mathf.Max(0f, 0.1f - hitDelay);
+        if (rest > 0f) yield return new WaitForSeconds(rest);
+
+        anim.SetBool("Claw", false); 
         anim.SetBool("ClawP", false); 
+        }
+      
+
+    void TryMelee()
+      {
+        if(Time.time < lastMeleeTime + meleeCooltime) return;
+        lastMeleeTime = Time.time;
+
+        clawC = (clawC + 1) % 2;
+        StartCoroutine(ClawAnimation());
+      }
+
+      void DoMeleeHit()
+      {
+        if (meleePoint == null) return;
+
+        var hits = Physics2D.OverlapCircleAll(meleePoint.position, meleeRadius, enemyLayers);
+
+        var damaged = new System.Collections.Generic.HashSet<GameObject>();
+
+        foreach (var h in hits)
+        {
+            if (h == null) continue;
+            var go = h.gameObject;
+            if (damaged.Contains(go)) continue;
+            damaged.Add(go);
+
+            var hp = h.GetComponent<EnemyHP>();
+            if(hp != null) hp.Damage(meleeDamage);
+            
         }
       }
  }
