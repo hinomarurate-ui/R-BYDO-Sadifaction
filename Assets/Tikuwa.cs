@@ -13,7 +13,6 @@ using System.Collections;
      //プライベート変数
      private Animator anim = null;
      private Rigidbody2D rb = null;
-     private AudioSource audioSource = null;
      private bool isGround = false;
      private bool isJump = false;
      private float jumpPos = 0.0f;
@@ -31,6 +30,8 @@ using System.Collections;
      [SerializeField] int meleeDamage = 1;
      [SerializeField] float meleeCooltime = 0.25f;
      [SerializeField] float hitDelay = 0.03f;
+     [SerializeField] AudioClip ClawS;
+     AudioSource As;
 
      float lastMeleeTime = -999f;
      bool JumpQueed;
@@ -42,7 +43,7 @@ using System.Collections;
           //コンポーネントのインスタンスを捕まえる
           anim = GetComponent<Animator>();
           rb = GetComponent<Rigidbody2D>();
-          audioSource = GetComponent<AudioSource>();
+          As = GetComponent<AudioSource>();
 
       }
 
@@ -57,9 +58,13 @@ using System.Collections;
         jumpHeld = Input.GetButton("Jump");
 
         if (Input.GetKeyDown(KeyCode.X))
+        {
+        As.PlayOneShot(ClawS,0.5f);
         MeleeQueed = true;
+        }
 
         shotHeld = Input.GetKey(KeyCode.Z);
+        
      }
 
       void FixedUpdate()
@@ -107,13 +112,13 @@ using System.Collections;
           }
           if (horizontalKey > 0)
           {
-              transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+              transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
               anim.SetBool("run", true);
               xSpeed = speed;
           }
           else if (horizontalKey < 0)
           {
-              transform.localScale = new Vector3(-0.7f, 0.7f, 0.7f);
+              transform.localScale = new Vector3(-0.6f, 0.6f, 0.6f);
               anim.SetBool("run", true);
               xSpeed = -speed;
           }

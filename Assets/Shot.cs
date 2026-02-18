@@ -12,13 +12,16 @@ public class Shot : MonoBehaviour
     float BulletSpeed;
     [SerializeField]
     float ShotCooltime;
+    AudioSource As;
+    [SerializeField] AudioClip ShotS;
 
     float LastShotTime = 0f;
     Transform PlayerTransform;
 
     void Start()
     {
-     PlayerTransform = this.transform;   
+     PlayerTransform = this.transform;
+    As = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -35,6 +38,7 @@ public class Shot : MonoBehaviour
         {
             return;
         }
+        As.PlayOneShot(ShotS,0.5f);
         LastShotTime = Time.time;
         GameObject Bullet = Instantiate(BydoShot,ShotPoint.position,Quaternion.identity);
         float Dirx = Mathf.Sign(PlayerTransform.localScale.x);
