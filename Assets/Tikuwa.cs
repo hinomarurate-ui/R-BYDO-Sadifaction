@@ -30,12 +30,25 @@ using System.Collections;
      [SerializeField] int meleeDamage = 1;
      [SerializeField] float meleeCooltime = 0.25f;
      [SerializeField] float hitDelay = 0.03f;
+     [SerializeField] float meleeStepSpeed = 10f;
+     [SerializeField] float meleeStepDeceleration = 40f;
      [SerializeField] AudioClip ClawS;
      AudioSource As;
 
+     [Header("BydoClaw")]
+     [SerializeField] float bydoClawRadius = 2.0f;
+     [SerializeField] int bydoClawDamage = 3;
+     [SerializeField] float bydoClawCooltime = 1.0f;
+     [SerializeField] float bydoClawHitDelay = 0.05f;
+     [SerializeField] float bydoClawStepSpeed = 15f;
+     
+
      float lastMeleeTime = -999f;
+     float lastBydoClawTime = -999f;
+     float currentMeleeStep = 0f;
      bool JumpQueed;
      bool MeleeQueed;
+     bool BydoClawQueed;
 
 
      void Start()
@@ -61,6 +74,12 @@ using System.Collections;
         {
         As.PlayOneShot(ClawS,0.5f);
         MeleeQueed = true;
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+        As.PlayOneShot(ClawS,0.5f);
+        BydoClawQueed = true;
         }
 
         shotHeld = Input.GetKey(KeyCode.Z);
@@ -110,15 +129,22 @@ using System.Collections;
             MeleeQueed = false;
             TryMelee();
           }
+
+          if(BydoClawQueed){
+
+            BydoClawQueed = false;
+            TryBydoClaw();
+          }
+
           if (horizontalKey > 0)
           {
-              transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+              transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
               anim.SetBool("run", true);
               xSpeed = speed;
           }
           else if (horizontalKey < 0)
           {
-              transform.localScale = new Vector3(-0.6f, 0.6f, 0.6f);
+              transform.localScale = new Vector3(-0.55f, 0.55f, 0.55f);
               anim.SetBool("run", true);
               xSpeed = -speed;
           }
@@ -133,6 +159,13 @@ using System.Collections;
           else{
             anim.SetBool("Shot", false);
           }
+
+          if (currentMeleeStep != 0f)
+          {
+            currentMeleeStep = Mathf.MoveTowards(currentMeleeStep, 0f, meleeStepDeceleration * Time.fixedDeltaTime);
+          }
+          xSpeed += currentMeleeStep;
+
           rb.velocity = new Vector2(xSpeed, ySpeed);
       }
 
@@ -149,6 +182,23 @@ using System.Collections;
         anim.SetBool("Claw", false); 
         anim.SetBool("ClawP", false); 
         }
+
+      IEnumerator ChargeAnimation(){
+        anim.SetBool("EXClaw", true);
+        yield return new WaitForSeconds(2f);
+
+        }
+
+      IEnumerator BydoClawAnimation(){
+
+        if (bydoClawHitDelay > 0f) yield return new WaitForSeconds(bydoClawHitDelay);
+
+        DoBydoClawHit();
+        float rest = Mathf.Max(0f, 0.1f - bydoClawHitDelay);
+        if (rest > 0f) yield return new WaitForSeconds(rest);
+
+        anim.SetBool("EXClaw", false); 
+        }
       
 
     void TryMelee()
@@ -156,8 +206,22 @@ using System.Collections;
         if(Time.time < lastMeleeTime + meleeCooltime) return;
         lastMeleeTime = Time.time;
 
+        currentMeleeStep = Mathf.Sign(transform.localScale.x) * meleeStepSpeed;
+
         clawC = (clawC + 1) % 2;
         StartCoroutine(ClawAnimation());
+      }
+
+      void TryBydoClaw()
+      {
+        if(Time.time < lastBydoClawTime + bydoClawCooltime) return;
+        lastBydoClawTime = Time.time;
+        StartCoroutine(ChargeAnimation());
+
+
+        StartCoroutine(BydoClawAnimation());
+        currentMeleeStep = Mathf.Sign(transform.localScale.x) * bydoClawStepSpeed;
+
       }
 
       void DoMeleeHit()
@@ -177,6 +241,27 @@ using System.Collections;
 
             var hp = h.GetComponent<EnemyHP>();
             if(hp != null) hp.Damage(meleeDamage);
+            
+        }
+      }
+
+      void DoBydoClawHit()
+      {
+        if (meleePoint == null) return;
+
+        var hits = Physics2D.OverlapCircleAll(meleePoint.position, bydoClawRadius, enemyLayers);
+
+        var damaged = new System.Collections.Generic.HashSet<GameObject>();
+
+        foreach (var h in hits)
+        {
+            if (h == null) continue;
+            var go = h.gameObject;
+            if (damaged.Contains(go)) continue;
+            damaged.Add(go);
+
+            var hp = h.GetComponent<EnemyHP>();
+            if(hp != null) hp.Damage(bydoClawDamage);
             
         }
       }
