@@ -87,7 +87,6 @@ using System.Collections;
 
         if (!isExActing && Input.GetKeyDown(KeyCode.E))
         {
-        As.PlayOneShot(ClawS,0.5f);
         BydoClawQueed = true;
         }
 
@@ -179,7 +178,7 @@ using System.Collections;
           {
             currentMeleeStep = Mathf.MoveTowards(currentMeleeStep, 0f, meleeStepDeceleration * Time.fixedDeltaTime);
           }
-          xSpeed += currentMeleeStep;
+          xSpeed += currentMeleeStep + currentBydoClawStep;
 
           rb.velocity = new Vector2(xSpeed, ySpeed);
       }
@@ -191,7 +190,7 @@ using System.Collections;
         if (hitDelay > 0f) yield return new WaitForSeconds(hitDelay);
 
         DoMeleeHit();
-        float rest = Mathf.Max(0f, 0.1f - hitDelay);
+        float rest = Mathf.Max(0f, bydoClawStepCooltime - hitDelay);
         if (rest > 0f) yield return new WaitForSeconds(rest);
 
         anim.SetBool("Claw", false); 
@@ -214,15 +213,19 @@ using System.Collections;
         anim.SetBool("ClawP", false);
         anim.SetBool("EXClaw", true);
 
+        
+        
+
         if (bydoClawStartTime > 0f)
         {
-          anim.Play("EXClaw", 0, 0f);
+          
           yield return new WaitForSeconds(bydoClawStartTime);
         }
 
         for (int i = 0; i < bydoClawCount; i++)
         {
-          anim.Play("EXClaw", 0, 0f);
+          anim.SetInteger("EXClawC",1+i);
+          As.PlayOneShot(ClawS,0.5f);
           yield return StartCoroutine(BydoClawStep());
 
           if(i < bydoClawCount - 1 && bydoClawInterval > 0f)
@@ -233,6 +236,8 @@ using System.Collections;
 
         currentBydoClawStep = 0f;
         anim.SetBool("EXClaw", false);
+        yield return new WaitForSeconds(bydoClawInterval);
+        anim.SetInteger("EXClawC",0);
 
         isExActing = false;
 

@@ -43,7 +43,7 @@ public class EnemyHP : MonoBehaviour
         HP -= damage;
         As.PlayOneShot(DmgS,0.5f);
         StartCoroutine(Flash());
-        if(HP < 0){
+        if(HP <= 0){
             DeathAnim();
         }
     }
