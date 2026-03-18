@@ -48,6 +48,7 @@ using System.Collections;
      [SerializeField] float bydoClawStepCooltime = 0.08f;
      [SerializeField] float bydoClawInterval = 0.05f;
      [SerializeField] float bydoClawHit = 2.0f;
+     [SerializeField] AudioClip Charge;
      
 
      float lastMeleeTime = -999f;
@@ -87,6 +88,7 @@ using System.Collections;
 
         if (!isExActing && Input.GetKeyDown(KeyCode.E))
         {
+        As.PlayOneShot(Charge,0.5f);
         BydoClawQueed = true;
         }
 
