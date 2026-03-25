@@ -9,6 +9,8 @@ public class EnemyHP : MonoBehaviour
     int HP;
     private Animator anim = null;
 
+    bool isDead = false;
+
     [SerializeField] float deathTorque = 10f;
     [SerializeField] EnemyMove em;
     [SerializeField] float deathcount = 1f;
@@ -16,6 +18,8 @@ public class EnemyHP : MonoBehaviour
     [SerializeField] float smashY = 5f;
     [SerializeField] ScoreManager Sm;
     [SerializeField] int EnemyScore;
+    [SerializeField] GameObject Bomb;
+    [SerializeField] float Bombtimer;
 
     [SerializeField] AudioClip DmgS;
     [SerializeField] AudioClip DthS;
@@ -28,6 +32,7 @@ public class EnemyHP : MonoBehaviour
        rb = GetComponent<Rigidbody2D>();
        em = GetComponent<EnemyMove>();
        As = GetComponent<AudioSource>();
+       
        Sm = GameObject.FindWithTag("GameController").GetComponent<ScoreManager>();
 
     }
@@ -40,6 +45,11 @@ public class EnemyHP : MonoBehaviour
 
     public void Damage(int damage)
     {
+        if(isDead)
+        {
+            return;
+        }
+
         HP -= damage;
         As.PlayOneShot(DmgS,0.5f);
         StartCoroutine(Flash());
@@ -50,6 +60,14 @@ public class EnemyHP : MonoBehaviour
 
     void DeathAnim()
     {
+        if(isDead)
+        {
+            return;
+        }
+
+        isDead = true;
+
+        BombEffect();
         //this.Physics2DLayerMask = Default;
         anim.SetTrigger("Death");
         As.PlayOneShot(DthS,0.5f);
@@ -106,6 +124,24 @@ public class EnemyHP : MonoBehaviour
         yield return new WaitForSeconds(0.065f);
         Texture.color = new Color32(255,255,255,255);
 
+    }
+
+    void BombEffect()
+    {
+        GameObject eIns = Instantiate(Bomb, transform.position, Quaternion.identity);
+        Vector3 scale = transform.lossyScale;
+
+        eIns.transform.localScale = new Vector3(Mathf.Abs(scale.x),Mathf.Abs(scale.y),1f);
+
+        SpriteRenderer myRenderer = GetComponent<SpriteRenderer>();
+        SpriteRenderer effectRenderer = eIns.GetComponent<SpriteRenderer>();
+
+        if (myRenderer != null && eIns != null)
+        {
+            effectRenderer.sortingLayerID = myRenderer.sortingLayerID;
+            effectRenderer.sortingOrder = myRenderer.sortingOrder + 1;
+        }
+        Destroy(eIns,Bombtimer);
     }
 
 }

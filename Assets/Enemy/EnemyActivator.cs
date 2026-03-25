@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class EnemyActivator : MonoBehaviour
 {
-    Enemy enemy;
-    EnemyMove enemyMove;
-    EnemyHP enemyHP;
-    Collider2D bodyCollider;
-    Rigidbody2D bodyRigidbody;
-    bool isActivated = false;
+    [SerializeField]Enemy enemy;
+    [SerializeField]EnemyMove enemyMove;
+    [SerializeField]EnemyHP enemyHP;
+    [SerializeField]Collider2D bodyCollider;
+    [SerializeField]Rigidbody2D bodyRigidbody;
+    [SerializeField]bool isActivated = false;
 
     void Awake()
     {
@@ -32,9 +32,8 @@ public class EnemyActivator : MonoBehaviour
         bodyRigidbody.simulated = true;
         bodyCollider.enabled = true;
         enemyHP.enabled = true;
-        enemyMove.enabled = true;
+        //enemyMove.enabled = true;
         enemy.enabled = true;
-        enabled = false;
         
     }
 

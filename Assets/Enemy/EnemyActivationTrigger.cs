@@ -3,7 +3,8 @@ using UnityEngine;
 public class EnemyActivationTrigger : MonoBehaviour
 {
     BoxCollider2D triggerZone;
-    bool hasActivated = false;
+    [SerializeField] bool hasActivated = false;
+    [SerializeField] EnemyActivator[] enemies;
     // Start is called before the first frame update
     void Reset()
     {
@@ -40,14 +41,10 @@ public class EnemyActivationTrigger : MonoBehaviour
     void ActivateNearbyEnemies()
     {
         Bounds zoneBounds = triggerZone.bounds;
-        EnemyActivator[] enemies = FindObjectsOfType<EnemyActivator>();
 
         for (int i = 0; i < enemies.Length; i++)
         {
-            if(zoneBounds.Contains(enemies[i].transform.position))
-            {
-                enemies[i].ActivateEnemy();
-            }
+            enemies[i].ActivateEnemy();
         }
 
         hasActivated = true;

@@ -247,6 +247,8 @@ MonoBehaviour:
   smashY: 3
   Sm: {fileID: 0}
   EnemyScore: 200
+  Bomb: {fileID: 3874840010022860247, guid: 000629cb1dd3cec4488c7c38972c7a1c, type: 3}
+  Bombtimer: 1
   DmgS: {fileID: 8300000, guid: b1093635c9619dc4bb6b94bddfff79cd, type: 3}
   DthS: {fileID: 8300000, guid: 1b3378c9bf1ab4c45a7c364da7b5e5d4, type: 3}
 --- !u!114 &3421184230293739800
@@ -395,6 +397,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7007da2f1603d344f9b35d8628c2fadf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemy: {fileID: 0}
+  enemyMove: {fileID: 0}
+  enemyHP: {fileID: 0}
+  bodyCollider: {fileID: 0}
+  bodyRigidbody: {fileID: 0}
+  isActivated: 0
 --- !u!1 &3421184230529860153
 GameObject:
   m_ObjectHideFlags: 0
