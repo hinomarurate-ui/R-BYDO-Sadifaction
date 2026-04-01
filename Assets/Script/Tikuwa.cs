@@ -106,7 +106,6 @@ using System.Collections;
 
           if (isGround)
           {
-            ySpeed = 0;
               if (!isExActing && JumpQueed)
               {
                   JumpQueed = false;
@@ -117,6 +116,7 @@ using System.Collections;
               }
               else
               {
+                  ySpeed = 0;
                   isJump = false;
                   anim.SetBool("jump", false);
               }
@@ -134,6 +134,10 @@ using System.Collections;
                   isJump = false;
               }
           }
+          else
+          {
+                ySpeed = -gravity;
+              }
           if(!isExActing && MeleeQueed){
 
             MeleeQueed = false;

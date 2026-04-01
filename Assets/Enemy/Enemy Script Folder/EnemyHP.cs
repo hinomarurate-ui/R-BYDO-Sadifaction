@@ -74,8 +74,18 @@ public class EnemyHP : MonoBehaviour
         Sm.AddScore(EnemyScore);
         gameObject.layer = LayerMask.NameToLayer("Corpse");
         em.enabled = false;
-
-        Vector2 impulse = new Vector2(1,0f) *  smashX + Vector2.up * smashY;
+        
+        GameObject Player = GameObject.FindWithTag("Player");
+        float dirX;
+        if((transform.position.x - Player.transform.position.x)>0)
+        {
+            dirX = 1f;
+        }
+        else 
+        {
+            dirX = -1f;
+        }
+        Vector2 impulse = new Vector2(dirX,0f) *  smashX + Vector2.up * smashY;
         rb.AddForce(impulse, ForceMode2D.Impulse);
 
         float torqueSign = (impulse.x >= 0f) ? -1f : 1f;

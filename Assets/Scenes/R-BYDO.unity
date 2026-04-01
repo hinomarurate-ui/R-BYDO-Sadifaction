@@ -215,7 +215,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &59999046
 Transform:
   m_ObjectHideFlags: 0
@@ -335,7 +335,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &65838804
 Transform:
   m_ObjectHideFlags: 0
@@ -547,7 +547,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.017034054, y: -2.7177424}
+  m_Offset: {x: 0.042951345, y: -2.7177424}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -558,7 +558,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4.9324303, y: 0.37993622}
+  m_Size: {x: 5.052401, y: 0.37993622}
   m_EdgeRadius: 0
 --- !u!114 &87588921
 MonoBehaviour:
@@ -1951,7 +1951,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 420353523}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 58.33, y: -0.30999994, z: -10}
+  m_LocalPosition: {x: 56.54, y: -2.4, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -3055,7 +3055,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &644061630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3264,8 +3264,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 664264843}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 125, y: 1, z: 1}
-  m_LocalScale: {x: 4, y: 4, z: 1}
+  m_LocalPosition: {x: 125, y: -2.5501, z: 1}
+  m_LocalScale: {x: 4, y: 2.2919168, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -3346,8 +3346,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 672883964}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.244, y: 1.0882, z: 0}
-  m_LocalScale: {x: 0.015574546, y: -2.479748, z: 1}
+  m_LocalPosition: {x: -0.24386, y: 1.0882, z: 0}
+  m_LocalScale: {x: 0.015855059, y: -2.479748, z: 1}
   m_Children: []
   m_Father: {fileID: 613694629}
   m_RootOrder: 1
@@ -6667,7 +6667,7 @@ MonoBehaviour:
   gravity: 20
   jumpSpeed: 25
   jumpHeight: 4
-  ground: {fileID: 613694631}
+  ground: {fileID: 87588921}
   meleePoint: {fileID: 235417032}
   meleeRadius: 1
   enemyLayers:
@@ -6750,7 +6750,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1911759350}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 58.33, y: -3.31, z: 0}
+  m_LocalPosition: {x: 56.54, y: -5.4, z: 0}
   m_LocalScale: {x: 0.55, y: 0.55, z: 0.55}
   m_Children:
   - {fileID: 87588919}
@@ -7209,7 +7209,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2049673023}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 58.33, y: -0.30999994, z: -10}
+  m_LocalPosition: {x: 56.54, y: -2.4, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1386159436}
@@ -7432,6 +7432,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 664064875}
     m_Modifications:
+    - target: {fileID: 3421184230293739800, guid: 5e9ca4d3fc8707a48921b4242eafb973, type: 3}
+      propertyPath: JumpPower
+      value: 10.31
+      objectReference: {fileID: 0}
     - target: {fileID: 3421184230293739802, guid: 5e9ca4d3fc8707a48921b4242eafb973, type: 3}
       propertyPath: m_RootOrder
       value: 0

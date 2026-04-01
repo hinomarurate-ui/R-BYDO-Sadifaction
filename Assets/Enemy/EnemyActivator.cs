@@ -32,7 +32,7 @@ public class EnemyActivator : MonoBehaviour
         bodyRigidbody.simulated = true;
         bodyCollider.enabled = true;
         enemyHP.enabled = true;
-        //enemyMove.enabled = true;
+        enemyMove.enabled = true;
         enemy.enabled = true;
         
     }

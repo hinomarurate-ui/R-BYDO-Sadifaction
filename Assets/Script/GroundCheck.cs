@@ -28,7 +28,9 @@ public class GroundCheck : MonoBehaviour
      }
 
      private void OnTriggerEnter2D(Collider2D collision)
+     
      {
+         print(collision.tag);
           if (collision.tag == groundTag)
           {
               isGroundEnter = true;
@@ -47,7 +49,7 @@ public class GroundCheck : MonoBehaviour
      {
           if (collision.tag == groundTag)
           {
-              isGroundExit = true;
+              isGroundExit  = true;
           }
      }
  }

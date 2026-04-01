@@ -50,15 +50,18 @@ public class EnemyMove : MonoBehaviour
     {
         if(enemy.isGround)
         {
-            Jumping = false;
+            
             if(enemy.isGake)
             {
                 if(!Jumping)
-                StartCoroutine(JumpCharge());
-                
+                {
+                    Jumping = true;
+                    StartCoroutine(JumpCharge());
+                }
             }
             else
             {
+                Jumping = false;
                 MoveX(Dirx);
             }
         }
@@ -102,6 +105,7 @@ public class EnemyMove : MonoBehaviour
     }
     IEnumerator JumpCharge()
     {
+        print("jump");
         JumpstartY = rb.position.y;
         anim.SetBool("JumpC", true);
         yield return new WaitForSeconds(0.5f);
