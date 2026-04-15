@@ -23,6 +23,7 @@ public class EnemyMove : MonoBehaviour
     float JumpstartY;
 
     bool Jumping;
+    bool JumpingCharge;
 
     private Animator anim = null;
     
@@ -33,7 +34,8 @@ public class EnemyMove : MonoBehaviour
     }
 
     void Start()
-    {
+    {    
+        JumpingCharge = false;
         Jumping = false;
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
@@ -53,15 +55,15 @@ public class EnemyMove : MonoBehaviour
             
             if(enemy.isGake)
             {
-                if(!Jumping)
+                if(!Jumping && !JumpingCharge)
                 {
-                    Jumping = true;
+                    
                     StartCoroutine(JumpCharge());
                 }
             }
             else
             {
-                Jumping = false;
+                
                 MoveX(Dirx);
             }
         }
@@ -72,8 +74,8 @@ public class EnemyMove : MonoBehaviour
 
     void FixedUpdate()
     {
-        float startY = JumpstartY + JumpSlow;
-        float endY = JumpstartY + MaxHeight;
+        float startY = JumpstartY + Mathf.Min(JumpSlow, MaxHeight);
+        float endY = JumpstartY + Mathf.Max(JumpSlow, MaxHeight);
 
         if(Jumping != true)
         {
@@ -86,11 +88,15 @@ public class EnemyMove : MonoBehaviour
             {
                 rb.AddForce(Vector2.up * JumpPower,ForceMode2D.Force);
             }
-            else
+            else if(rb.position.y < endY)
             {
                 float T = Mathf.InverseLerp(startY,endY,rb.position.y);
                 float thrust = Mathf.Lerp(JumpPower,0,T);
                 rb.AddForce(Vector2.up * thrust, ForceMode2D.Force);
+            }
+            else
+            {
+                rb.velocity = new Vector2(rb.velocity.x, Mathf.Min(rb.velocity.y, 0f));
             }
 
         }
@@ -98,6 +104,7 @@ public class EnemyMove : MonoBehaviour
     void Jump(float Dirx)
     {
         Jumping = true;
+        JumpstartY = rb.position.y;
         anim.SetBool("Jump", true);
         anim.SetBool("JumpC", false);
         rb.AddForce(Vector2.up * JumpImpulse,ForceMode2D.Impulse);
@@ -105,10 +112,17 @@ public class EnemyMove : MonoBehaviour
     }
     IEnumerator JumpCharge()
     {
-        print("jump");
-        JumpstartY = rb.position.y;
+        JumpingCharge = true;
         anim.SetBool("JumpC", true);
+        rb.velocity = new Vector2(0f,rb.velocity.y);
         yield return new WaitForSeconds(0.5f);
+        JumpingCharge = false;
+
+        if(!enemy.isGround || !enemy.isGake)
+        {
+            anim.SetBool("JumpC", false);
+            yield break;
+        }
         Jump(Dirx);
          yield return new WaitForSeconds(0.3f);
     }

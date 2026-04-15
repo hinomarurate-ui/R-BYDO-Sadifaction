@@ -266,10 +266,10 @@ MonoBehaviour:
   MoveSpeed: 2
   Dirx: -1
   enemy: {fileID: 0}
-  JumpImpulse: 1
-  JumpPower: 10
-  JumpSlow: 2.72
-  MaxHeight: 2.5
+  JumpImpulse: 4
+  JumpPower: 0.5
+  JumpSlow: 3
+  MaxHeight: 1
 --- !u!95 &3421184230293739814
 Animator:
   serializedVersion: 3

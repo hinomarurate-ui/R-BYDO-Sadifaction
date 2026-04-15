@@ -11,6 +11,10 @@ using System.Collections;
      public GroundCheck ground; //接地判定
 
      //プライベート変数
+     [SerializeField] private float colliderFriction = 0f;
+     [SerializeField] private float colliderBounciness = 0f;
+     private Collider2D bodyCollider = null;
+     private PhysicsMaterial2D runtimeBodyMaterial = null;
      private Animator anim = null;
      private Rigidbody2D rb = null;
      private bool isGround = false;
@@ -67,8 +71,19 @@ using System.Collections;
           anim = GetComponent<Animator>();
           rb = GetComponent<Rigidbody2D>();
           As = GetComponent<AudioSource>();
+          bodyCollider = GetComponent<Collider2D>();
+          ApplyBodyMaterial();
 
       }
+
+      void ApplyBodyMaterial()
+      {
+        runtimeBodyMaterial = new PhysicsMaterial2D("PlayerNoFriction");
+        runtimeBodyMaterial.friction = colliderFriction;
+        runtimeBodyMaterial.bounciness = colliderBounciness;
+        bodyCollider.sharedMaterial = runtimeBodyMaterial;
+      }
+
 
      void Update()
      {
