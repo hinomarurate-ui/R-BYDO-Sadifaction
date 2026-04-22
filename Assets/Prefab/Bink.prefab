@@ -243,14 +243,14 @@ MonoBehaviour:
   deathTorque: 5
   em: {fileID: 0}
   deathcount: 1
-  smashX: 8
-  smashY: 3
+  smashX: 10
+  smashY: 15
   Sm: {fileID: 0}
   EnemyScore: 200
   Bomb: {fileID: 3874840010022860247, guid: 000629cb1dd3cec4488c7c38972c7a1c, type: 3}
   Bombtimer: 1
-  DmgS: {fileID: 8300000, guid: 1b38db35f58997448bbcc613b90acbc1, type: 3}
-  DthS: {fileID: 8300000, guid: 72d9348ae89aacb49943663d2864d86d, type: 3}
+  DmgS: {fileID: 8300000, guid: b1093635c9619dc4bb6b94bddfff79cd, type: 3}
+  DthS: {fileID: 8300000, guid: 1b3378c9bf1ab4c45a7c364da7b5e5d4, type: 3}
 --- !u!114 &3421184230293739800
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -17,6 +17,7 @@ using System.Collections;
      private PhysicsMaterial2D runtimeBodyMaterial = null;
      private Animator anim = null;
      private Rigidbody2D rb = null;
+     private SpriteRenderer sr = null;
      private bool isGround = false;
      private bool isJump = false;
      private float jumpPos = 0.0f;
@@ -53,15 +54,29 @@ using System.Collections;
      [SerializeField] float bydoClawInterval = 0.05f;
      [SerializeField] float bydoClawHit = 2.0f;
      [SerializeField] AudioClip Charge;
+
+     [Header("BydoMissile")]
+     [SerializeField] float bydoMissileCooltime = 1.5f;
+     [SerializeField] float bydoMissileStartTime = 0.35f;
+     [SerializeField] int bydoMissileCount = 3;
+     [SerializeField] float bydoMissileInterval = 0.16f;
+     [SerializeField] int bydoMissileDamage = 4;
+     [SerializeField] float bydoMissileSeekRange = 16f;
+     [SerializeField] GameObject bydoMissilePrefab;
+     [SerializeField] Sprite bydoMissileChargeSprite;
+     [SerializeField] Sprite bydoMissileAttackSprite;
+
      
 
      float lastMeleeTime = -999f;
      float lastBydoClawTime = -999f;
+     float lastbydoMissileTime = -999f;
      float currentMeleeStep = 0f;
      bool JumpQueed;
      bool MeleeQueed;
      bool BydoClawQueed;
      float currentBydoClawStep;
+     bool bydoMissileQueed;
      bool isExActing;
 
 
@@ -70,6 +85,7 @@ using System.Collections;
           //コンポーネントのインスタンスを捕まえる
           anim = GetComponent<Animator>();
           rb = GetComponent<Rigidbody2D>();
+          sr = GetComponent<SpriteRenderer>();
           As = GetComponent<AudioSource>();
           bodyCollider = GetComponent<Collider2D>();
           ApplyBodyMaterial();
@@ -105,6 +121,12 @@ using System.Collections;
         {
         As.PlayOneShot(Charge,0.5f);
         BydoClawQueed = true;
+        }
+
+        if (!isExActing && Input.GetKeyDown(KeyCode.Q))
+        {
+        As.PlayOneShot(Charge,0.5f);
+        bydoMissileQueed = true;
         }
 
         shotHeld = !isExActing && Input.GetKey(KeyCode.Z);
@@ -163,6 +185,12 @@ using System.Collections;
 
             BydoClawQueed = false;
             TryBydoClaw();
+          }
+
+          if(!isExActing && bydoMissileQueed){
+
+            bydoMissileQueed = false;
+            TryBydoMissile();
           }
 
           if (isExActing)
@@ -297,6 +325,50 @@ using System.Collections;
 
         
       }
+
+      IEnumerator BydoMissile()
+      {
+        isExActing = true;
+        JumpQueed = false;
+        MeleeQueed = false;
+        BydoClawQueed = false;
+        bydoMissileQueed = false;
+        currentMeleeStep = 0f;
+        currentBydoClawStep = 0f;
+
+        anim.SetBool("Shot", false);
+        anim.SetBool("run", false);
+        anim.SetBool("Claw", false);
+        anim.SetBool("ClawP", false);
+        anim.SetBool("EXClaw", false);
+        anim.SetInteger("EXClawC", 0);
+        SetBydoMissilePose(bydoMissileChargeSprite);
+
+        if (bydoMissileStartTime > 0f)
+        {
+          yield return new WaitForSeconds(bydoMissileStartTime);
+        }
+
+        SetBydoMissilePose(bydoMissileAttackSprite);
+
+        for (int i = 0; i < bydoMissileCount; i++)
+        {
+          SpawnBydoMissile(i);
+
+          if (i < bydoMissileCount - 1 && bydoMissileInterval > 0f)
+          {
+            yield return new WaitForSeconds(bydoMissileInterval);
+          }
+        }
+
+        if (bydoMissileInterval > 0f)
+        {
+          yield return new WaitForSeconds(bydoMissileInterval);
+        }
+
+        ResetAnimatorPose();
+        isExActing = false;
+      }
       
 
     void TryMelee()
@@ -320,6 +392,51 @@ using System.Collections;
 
 
 
+      }
+
+      void TryBydoMissile()
+      {
+        if(isExActing)return;
+        if(Time.time < lastbydoMissileTime + bydoMissileCooltime) return;
+        lastbydoMissileTime = Time.time;
+
+        StartCoroutine(BydoMissile());
+      }
+
+      void SetBydoMissilePose(Sprite poseSprite)
+      {
+        anim.enabled = false;
+        sr.sprite = poseSprite;
+      }
+
+      void ResetAnimatorPose()
+      {
+        if(anim != null)
+        {
+          anim.enabled = true;
+        }
+      }
+
+      void SpawnBydoMissile(int missileIndex)
+      {
+        if (bydoMissilePrefab == null) return;
+
+        float dirX = Mathf.Sign(transform.localScale.x);
+        if (dirX == 0f) dirX = 1f;
+
+        Transform shotPoint = transform.Find("ShotPosition");
+        Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
+
+        float centeredIndex = missileIndex - ((bydoMissileCount - 1) * 0.5f);
+        Vector3 spawnOffset = new Vector3(-0.35f * dirX, 1.2f + Mathf.Abs(centeredIndex) * 0.35f, 0f);
+        Vector3 spawnPosition = origin + spawnOffset;
+
+        GameObject missileObject = Instantiate(bydoMissilePrefab, spawnPosition, Quaternion.identity);
+        Missile Missile = missileObject.GetComponent<Missile>();
+
+        Vector2 initialDirection = new Vector2(dirX, -0.15f * centeredIndex).normalized;
+        Missile.Init(initialDirection, dirX, bydoClawDamage, enemyLayers, bydoMissileSeekRange);
+        //a
       }
 
       void DoMeleeHit()
