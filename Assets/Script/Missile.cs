@@ -6,6 +6,7 @@ public class Missile : MonoBehaviour
     [SerializeField] float turnSpeed = 360f;
     [SerializeField] float lifeTime = 3f;
     [SerializeField] float targetRefreshInterval = 0.12f;
+    [SerializeField] float homingTime = 1.4f;
 
     Rigidbody2D rb;
     Transform target;
@@ -14,9 +15,12 @@ public class Missile : MonoBehaviour
     float targetRange;
     float facingDir = 1f;
     float nextTargetRefreshTime = 0f;
+    float homingEndTime;
     int damage = 3;
+    float killShakePower = 0.3f;
+    float killShakeTime = 0.2f;
 
-    public void Init(Vector2 initialDirection, float facing, int damageValue, LayerMask targetLayers, float seekRange)
+    public void Init(Vector2 initialDirection, float facing, int damageValue, LayerMask targetLayers, float seekRange, float shakePower, float shakeTime)
     {
         rb = GetComponent<Rigidbody2D>();
         facingDir = facing == 0f ? 1f : Mathf.Sign(facing);
@@ -24,8 +28,12 @@ public class Missile : MonoBehaviour
         damage = damageValue;
         enemyLayers = targetLayers;
         targetRange = seekRange;
+        killShakePower = shakePower;
+        killShakeTime = shakeTime;
+        homingEndTime = Time.time + homingTime;
 
         if (rb == null) return;
+        Destroy(gameObject, lifeTime);
 
         if (Time.time >= nextTargetRefreshTime || !IsValidTarget(target))
         {
@@ -50,6 +58,39 @@ public class Missile : MonoBehaviour
         rb.velocity = currentDirection * speed;
         RotateToVelocity();
         
+    }
+
+    void FixedUpdate()
+    {
+        if(rb == null) return;
+
+        if(Time.time <= homingEndTime)
+        {
+            
+            if(Time.time >= nextTargetRefreshTime || !IsValidTarget(target))
+            {
+                
+                target = AcquireTarget();
+                nextTargetRefreshTime = Time.time + targetRefreshInterval;
+            }
+
+            Vector2 desiredDirection = currentDirection;
+            if(IsValidTarget(target))
+            {
+                desiredDirection = ((Vector2)target.position - rb.position).normalized;
+            }
+
+            float maxRadiansDelta = turnSpeed * Mathf.Deg2Rad * Time.fixedDeltaTime;
+            Vector3 rotatedDirection = Vector3.RotateTowards(currentDirection,desiredDirection,maxRadiansDelta,0f);
+            currentDirection = new Vector2(rotatedDirection.x, rotatedDirection.y).normalized;
+            if(currentDirection.sqrMagnitude <= 0.0001f)
+            {
+                currentDirection = new Vector2(facingDir, 0f);
+            }
+        }
+
+        rb.velocity = currentDirection * speed;
+        RotateToVelocity();
     }
 
     Transform AcquireTarget()
@@ -109,7 +150,12 @@ public class Missile : MonoBehaviour
         EnemyHP enemy = collision.GetComponent<EnemyHP>();
         if (enemy == null) return;
 
-        enemy.Damage(damage);
+
+
+        if(enemy.Damage(damage))
+        {
+           ShakeScreen.Shake(killShakePower,killShakeTime);
+        }
         Destroy(gameObject);
     }
 

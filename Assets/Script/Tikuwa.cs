@@ -37,7 +37,10 @@ using System.Collections;
      [SerializeField] float hitDelay = 0.03f;
      [SerializeField] float meleeStepSpeed = 10f;
      [SerializeField] float meleeStepDeceleration = 40f;
+     [SerializeField] float meleeKillShakePower = 0.16f;
+     [SerializeField] float meleeKillShakeTime = 0.16f;
      [SerializeField] AudioClip ClawS;
+     [SerializeField] AudioClip ClawSEnd;
      AudioSource As;
 
      [Header("BydoClaw")]
@@ -46,7 +49,8 @@ using System.Collections;
      [SerializeField] float bydoClawCooltime = 1.0f;
      [SerializeField] float bydoClawHitDelay = 0.05f;
      [SerializeField] float bydoClawStepSpeed = 15f;
-
+     [SerializeField] float bydoClawShakePower = 0.3f;
+     [SerializeField] float bydoClawShakeTime = 0.2f;
      [SerializeField] float bydoClawStartTime = 0.12f;
      [SerializeField] int bydoClawCount = 3;
      [SerializeField] float bydoClawDistance = 3f;
@@ -62,9 +66,14 @@ using System.Collections;
      [SerializeField] float bydoMissileInterval = 0.16f;
      [SerializeField] int bydoMissileDamage = 4;
      [SerializeField] float bydoMissileSeekRange = 16f;
+     [SerializeField] float bydoMissileKillShakePower = 0.3f;
+     [SerializeField] float bydoMissileKillShakeTime = 0.2f;
      [SerializeField] GameObject bydoMissilePrefab;
      [SerializeField] Sprite bydoMissileChargeSprite;
      [SerializeField] Sprite bydoMissileAttackSprite;
+     [SerializeField] AudioClip misairu;
+
+     
 
      
 
@@ -280,8 +289,12 @@ using System.Collections;
           if(i < bydoClawCount - 1 && bydoClawInterval > 0f)
           {
             yield return new WaitForSeconds(bydoClawInterval);
+            
           }
+          
         }
+
+        As.PlayOneShot(ClawSEnd,0.5f);
 
         currentBydoClawStep = 0f;
         anim.SetBool("EXClaw", false);
@@ -354,6 +367,7 @@ using System.Collections;
         for (int i = 0; i < bydoMissileCount; i++)
         {
           SpawnBydoMissile(i);
+          As.PlayOneShot(misairu,0.5f);
 
           if (i < bydoMissileCount - 1 && bydoMissileInterval > 0f)
           {
@@ -435,7 +449,7 @@ using System.Collections;
         Missile Missile = missileObject.GetComponent<Missile>();
 
         Vector2 initialDirection = new Vector2(dirX, -0.15f * centeredIndex).normalized;
-        Missile.Init(initialDirection, dirX, bydoClawDamage, enemyLayers, bydoMissileSeekRange);
+        Missile.Init(initialDirection, dirX, bydoClawDamage, enemyLayers, bydoMissileSeekRange, bydoMissileKillShakePower, bydoMissileKillShakeTime);
         //a
       }
 
@@ -455,7 +469,10 @@ using System.Collections;
             damaged.Add(go);
 
             var hp = h.GetComponent<EnemyHP>();
-            if(hp != null) hp.Damage(meleeDamage);
+            if(hp != null && hp.Damage(meleeDamage))
+            {
+              ShakeScreen.Shake(meleeKillShakePower,meleeKillShakeTime);
+            }
             
         }
       }
@@ -476,7 +493,10 @@ using System.Collections;
             damaged.Add(go);
 
             var hp = h.GetComponent<EnemyHP>();
-            if(hp != null) hp.Damage(damage);
+            if(hp != null && hp.Damage(meleeDamage))
+            {
+              ShakeScreen.Shake(bydoClawShakePower,bydoClawShakeTime);
+            }
             
         }
       }

@@ -43,11 +43,11 @@ public class EnemyHP : MonoBehaviour
         HP = ES.MaxHP;
     }
 
-    public void Damage(int damage)
+    public bool Damage(int damage)
     {
         if(isDead)
         {
-            return;
+            return false;
         }
 
         HP -= damage;
@@ -55,7 +55,9 @@ public class EnemyHP : MonoBehaviour
         StartCoroutine(Flash());
         if(HP <= 0){
             DeathAnim();
+            return true;
         }
+        return false;
     }
 
     void DeathAnim()

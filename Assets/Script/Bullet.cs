@@ -14,6 +14,9 @@ public class Bullet : MonoBehaviour
   Vector2 Dir;
   Rigidbody2D rb;
 
+  float killShakePower = 0.3f;
+  float killShakeTime = 0.2f;
+
     void Start()
     {
        
@@ -33,7 +36,10 @@ public class Bullet : MonoBehaviour
         if(collision.CompareTag("Enemy"))
         {
             EnemyHP enemy = collision.GetComponent<EnemyHP>();
-            enemy.Damage(Damage);
+          if(enemy.Damage(Damage))
+        {
+            ShakeScreen.Shake(killShakePower,killShakeTime);
+        }
             Destroy(gameObject);
         }
     }
