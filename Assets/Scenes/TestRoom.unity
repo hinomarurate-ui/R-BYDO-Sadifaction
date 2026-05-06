@@ -1237,7 +1237,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 420353523}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 49.7, y: -0.20000005, z: -10}
+  m_LocalPosition: {x: 16.89, y: -2.3000002, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -2369,7 +2369,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3421184230293739802, guid: 5e9ca4d3fc8707a48921b4242eafb973, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 26.4
+      value: 23.96
       objectReference: {fileID: 0}
     - target: {fileID: 3421184230293739802, guid: 5e9ca4d3fc8707a48921b4242eafb973, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4704,15 +4704,15 @@ MonoBehaviour:
   enemyLayers:
     serializedVersion: 2
     m_Bits: 32768
-  meleeDamage: 1
-  meleeCooltime: 0.25
+  meleeDamage: 3
+  meleeCooltime: 0.05
   hitDelay: 0.03
   meleeStepSpeed: 20
   meleeStepDeceleration: 40
   meleeKillShakePower: 0.16
   meleeKillShakeTime: 0.16
-  ClawS: {fileID: 8300000, guid: 06f99e9db1425fd4a9dfed1d562df6c6, type: 3}
-  ClawSEnd: {fileID: 0}
+  ClawS: {fileID: 8300000, guid: 60c5b73fe79445c4585afd512e5c8808, type: 3}
+  ClawSEnd: {fileID: 8300000, guid: 9a7dd337a0bf58243aca21d48e99e8f6, type: 3}
   bydoClawRadius: 2
   bydoClawDamage: 5
   bydoClawCooltime: 1
@@ -4798,7 +4798,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1911759350}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 49.7, y: -3.2, z: 0}
+  m_LocalPosition: {x: 16.89, y: -5.3, z: 0}
   m_LocalScale: {x: 0.55, y: 0.55, z: 0.55}
   m_Children:
   - {fileID: 87588919}
@@ -5441,7 +5441,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2049673023}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 49.7, y: -0.20000005, z: -10}
+  m_LocalPosition: {x: 16.89, y: -2.3000002, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1386159436}

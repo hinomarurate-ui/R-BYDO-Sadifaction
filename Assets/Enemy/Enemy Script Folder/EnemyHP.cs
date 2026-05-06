@@ -13,6 +13,7 @@ public class EnemyHP : MonoBehaviour
 
     [SerializeField] float deathTorque = 10f;
     [SerializeField] EnemyMove em;
+    [SerializeField] EnemyAttack ea;
     [SerializeField] float deathcount = 1f;
     [SerializeField] float smashX = 8f;
     [SerializeField] float smashY = 5f;
@@ -31,6 +32,7 @@ public class EnemyHP : MonoBehaviour
        co = GetComponent<Collider2D>();
        rb = GetComponent<Rigidbody2D>();
        em = GetComponent<EnemyMove>();
+       ea = GetComponent<EnemyAttack>();
        As = GetComponent<AudioSource>();
        
        Sm = GameObject.FindWithTag("GameController").GetComponent<ScoreManager>();
@@ -76,6 +78,7 @@ public class EnemyHP : MonoBehaviour
         Sm.AddScore(EnemyScore);
         gameObject.layer = LayerMask.NameToLayer("Corpse");
         em.enabled = false;
+        ea.enabled = false;
         
         GameObject Player = GameObject.FindWithTag("Player");
         float dirX;

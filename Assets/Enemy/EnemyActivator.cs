@@ -4,6 +4,7 @@ public class EnemyActivator : MonoBehaviour
 {
     [SerializeField]Enemy enemy;
     [SerializeField]EnemyMove enemyMove;
+    [SerializeField]EnemyAttack enemyAttack;
     [SerializeField]EnemyHP enemyHP;
     [SerializeField]Collider2D bodyCollider;
     [SerializeField]Rigidbody2D bodyRigidbody;
@@ -13,6 +14,7 @@ public class EnemyActivator : MonoBehaviour
     {
         enemy = GetComponent<Enemy>();
         enemyMove = GetComponent<EnemyMove>();
+        enemyAttack = GetComponent<EnemyAttack>();
         enemyHP = GetComponent<EnemyHP>();
         bodyCollider = GetComponent<Collider2D>();
         bodyRigidbody = GetComponent<Rigidbody2D>();
@@ -32,6 +34,7 @@ public class EnemyActivator : MonoBehaviour
         bodyRigidbody.simulated = true;
         bodyCollider.enabled = true;
         enemyHP.enabled = true;
+        enemyAttack.enabled = true;
         enemyMove.enabled = true;
         enemy.enabled = true;
         
@@ -45,6 +48,7 @@ public class EnemyActivator : MonoBehaviour
         bodyRigidbody.simulated = false;
         bodyCollider.enabled = false;
         enemyHP.enabled = false;
+        enemyAttack.enabled = false;
         enemyMove.enabled = false;
         enemy.enabled = false;
     }

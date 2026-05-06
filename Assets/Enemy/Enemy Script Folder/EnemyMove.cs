@@ -44,6 +44,7 @@ public class EnemyMove : MonoBehaviour
     public void MoveX(float Dirx)
     {
         anim.SetBool("Jump", false);
+        anim.SetBool("Walk", true);
         rb.velocity = new Vector2(Dirx * MoveSpeed, rb.velocity.y);
     }
 
@@ -112,6 +113,7 @@ public class EnemyMove : MonoBehaviour
     }
     IEnumerator JumpCharge()
     {
+        anim.SetBool("Walk", false);
         JumpingCharge = true;
         anim.SetBool("JumpC", true);
         rb.velocity = new Vector2(0f,rb.velocity.y);

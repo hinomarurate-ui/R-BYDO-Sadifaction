@@ -869,7 +869,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -29.516485, y: -3.4550343}
+  m_Offset: {x: -106.4009, y: -3.4550343}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -880,7 +880,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 60.03297, y: 42.096714}
+  m_Size: {x: 213.8018, y: 42.096714}
   m_EdgeRadius: 0
 --- !u!114 &140381411
 MonoBehaviour:
@@ -2029,7 +2029,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 420353523}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 192.7, y: -2.4, z: -10}
+  m_LocalPosition: {x: 57.47, y: -2.4, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -7373,7 +7373,7 @@ MonoBehaviour:
   enemyLayers:
     serializedVersion: 2
     m_Bits: 32768
-  meleeDamage: 1
+  meleeDamage: 3
   meleeCooltime: 0.1
   hitDelay: 0.03
   meleeStepSpeed: 20
@@ -7467,7 +7467,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1911759350}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 192.7, y: -5.4, z: 0}
+  m_LocalPosition: {x: 57.47, y: -5.4, z: 0}
   m_LocalScale: {x: 0.55, y: 0.55, z: 0.55}
   m_Children:
   - {fileID: 87588919}
@@ -8001,7 +8001,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2049673023}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 192.7, y: -2.4, z: -10}
+  m_LocalPosition: {x: 57.47, y: -2.4, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1386159436}
