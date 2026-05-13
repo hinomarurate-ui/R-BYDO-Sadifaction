@@ -10,6 +10,10 @@ using System.Collections;
      public float jumpHeight;//高さ制限
      public GroundCheck ground; //接地判定
 
+     [Header("HP")]
+     [SerializeField] int maxHP = 100;
+     [SerializeField] int currentHP;
+
      //プライベート変数
      [SerializeField] private float colliderFriction = 0f;
      [SerializeField] private float colliderBounciness = 0f;
@@ -36,7 +40,7 @@ using System.Collections;
      [SerializeField] float meleeCooltime = 0.25f;
      [SerializeField] float hitDelay = 0.03f;
      [SerializeField] float meleeStepSpeed = 10f;
-     [SerializeField] float meleeStepDeceleration = 40f;
+     [SerializeField] float meleeStepDeceleration = 40f; //減速率
      [SerializeField] float meleeKillShakePower = 0.16f;
      [SerializeField] float meleeKillShakeTime = 0.16f;
      [SerializeField] AudioClip ClawS;
@@ -97,8 +101,15 @@ using System.Collections;
           sr = GetComponent<SpriteRenderer>();
           As = GetComponent<AudioSource>();
           bodyCollider = GetComponent<Collider2D>();
+          currentHP = maxHP;
           ApplyBodyMaterial();
 
+      }
+
+      public void Damage(int damage)
+      {
+        currentHP = Mathf.Max(0, currentHP - damage);
+        Debug.Log("痛い");
       }
 
       void ApplyBodyMaterial()
@@ -210,13 +221,13 @@ using System.Collections;
 
           else if (horizontalKey > 0)
           {
-              transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
+              transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
               anim.SetBool("run", true);
               xSpeed = speed;
           }
           else if (horizontalKey < 0)
           {
-              transform.localScale = new Vector3(-0.55f, 0.55f, 0.55f);
+              transform.localScale = new Vector3(-0.6f, 0.6f, 0.6f);
               anim.SetBool("run", true);
               xSpeed = -speed;
           }
