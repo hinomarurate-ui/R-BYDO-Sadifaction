@@ -22,7 +22,11 @@ public class EnemyMovePstaff : MonoBehaviour
     [SerializeField]  float bulletLifeTime = 3f;
     [SerializeField]  int bulletCount = 1;
     [SerializeField]  float bulletAngleSpace = 12f;
+    [SerializeField]  int bulletDamage = 15;
     [SerializeField]  float aimHeight = 0.5f;
+
+    [SerializeField] AudioClip Mis;
+     [SerializeField]   AudioSource As;
 
     private Animator anim = null;
     Transform player;
@@ -39,6 +43,7 @@ public class EnemyMovePstaff : MonoBehaviour
     {    
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+        As = GetComponent<AudioSource>();
         
         GameObject playerObject = GameObject.FindWithTag("Player");
         if(playerObject != null)
@@ -61,6 +66,7 @@ public class EnemyMovePstaff : MonoBehaviour
         {
             return;
         }
+    if(gameObject.layer == LayerMask.NameToLayer("Corpse")) return;
     float distance = Vector2.Distance(transform.position, player.position);
     if (distance < searchRange)
     {
@@ -81,7 +87,7 @@ public class EnemyMovePstaff : MonoBehaviour
         if(isAttacking)
         {
             rb.velocity = new Vector2(0f, rb.velocity.y);
-            
+            return;
         }
         MoveX(Dirx);
 
@@ -106,6 +112,7 @@ public class EnemyMovePstaff : MonoBehaviour
         anim.SetBool("Missile", true);
         yield return new WaitForSeconds(shotChargetime);
         ShotFan();
+        As.PlayOneShot(Mis,1.25f);
 
 
         yield return new WaitForSeconds(attackEndTime);
@@ -132,12 +139,12 @@ public class EnemyMovePstaff : MonoBehaviour
         float angle = (i - center) * bulletAngleSpace;
         Vector2 dir = (Vector2)(Quaternion.Euler(0f, 0f, angle) * baseDir);
 
-        /*GameObject bullet = Instantiate(bulletPrefab, origin, Quaternion.identity);
-        EnemyBullet enemyBullet = bullet.GetComponent<EnemyBullet>();
-        if(enemyBullet != null)
+        GameObject bullet = Instantiate(bulletPrefab, origin, Quaternion.identity);
+        EnemyMissile enemyMissile = bullet.GetComponent<EnemyMissile>();
+        if(enemyMissile != null)
         {
-            enemyBullet.Init(dir, bulletSpeed, bulletLifeTime);
-        }*/
+            enemyMissile.Init(dir, bulletSpeed, bulletLifeTime, bulletDamage);
+        }
     }
 
     }
