@@ -137,6 +137,6 @@ MonoBehaviour:
   damage: 10
   upSpeed: 3
   upTime: 0
-  turnSpeed: 90
+  turnSpeed: 180
   homingTime: 1.2
   straightTime: 0.1

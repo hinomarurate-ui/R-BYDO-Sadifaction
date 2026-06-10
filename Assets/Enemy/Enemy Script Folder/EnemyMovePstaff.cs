@@ -22,6 +22,7 @@ public class EnemyMovePstaff : MonoBehaviour
     [SerializeField]  float bulletLifeTime = 3f;
     [SerializeField]  int bulletCount = 1;
     [SerializeField]  float bulletAngleSpace = 12f;
+    [SerializeField] float bulletInterval = 0.1f;
     [SerializeField]  int bulletDamage = 15;
     [SerializeField]  float aimHeight = 0.5f;
 
@@ -111,9 +112,10 @@ public class EnemyMovePstaff : MonoBehaviour
         }
         anim.SetBool("Missile", true);
         yield return new WaitForSeconds(shotChargetime);
-        ShotFan();
-        As.PlayOneShot(Mis,1.25f);
+        //ShotFan();
+        //As.PlayOneShot(Mis,1.25f);
 
+        yield return StartCoroutine(ShotFan());
 
         yield return new WaitForSeconds(attackEndTime);
         anim.SetBool("Shot", false);
@@ -126,7 +128,7 @@ public class EnemyMovePstaff : MonoBehaviour
 
     }
 
-    void ShotFan()
+    IEnumerator ShotFan()
     {
 
     Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
@@ -144,6 +146,16 @@ public class EnemyMovePstaff : MonoBehaviour
         if(enemyMissile != null)
         {
             enemyMissile.Init(dir, bulletSpeed, bulletLifeTime, bulletDamage);
+        }
+
+        if(As != null && Mis != null)
+        {
+            As.PlayOneShot(Mis,1.25f);
+        }
+
+        if(i < bulletCount - 1 && bulletInterval > 0f)
+        {
+            yield return new WaitForSeconds(bulletInterval);
         }
     }
 

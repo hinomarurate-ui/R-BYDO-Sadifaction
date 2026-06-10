@@ -52,8 +52,8 @@ public class EnemyMissile : MonoBehaviour
     {
         rb.velocity = new Vector2(1,1) * upSpeed;
         yield return new WaitForSeconds(upTime);
-        moveDir = dir.normalized;
-        rb.velocity = -moveDir * speedValue;
+        moveDir = -dir.normalized;
+        rb.velocity = moveDir * speedValue;
         yield return new WaitForSeconds(straightTime);
         homingEndTime = Time.time + homingTime;
         isHoming = true;

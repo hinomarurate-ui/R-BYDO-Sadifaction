@@ -14,6 +14,11 @@ using System.Collections;
      [SerializeField] int maxHP = 100;
      [SerializeField] int currentHP;
 
+     public int MaxHP { get { return maxHP; } }
+     public int CurrentHP { get { return currentHP; } }
+     public float HpRate { get { return maxHP <= 0 ? 0f : (float)currentHP / maxHP; } }
+     public event  System.Action<int, int> OnHpChanged;
+
      //プライベート変数
      [SerializeField] private float colliderFriction = 0f;
      [SerializeField] private float colliderBounciness = 0f;
@@ -102,14 +107,27 @@ using System.Collections;
           As = GetComponent<AudioSource>();
           bodyCollider = GetComponent<Collider2D>();
           currentHP = maxHP;
+          NotifyHpChanged();
           ApplyBodyMaterial();
 
       }
 
       public void Damage(int damage)
       {
-        currentHP = Mathf.Max(0, currentHP - damage);
-        Debug.Log("痛い");
+        int beforeHP= currentHP;
+        currentHP = Mathf.Clamp(currentHP - damage, 0, maxHP);
+        if(currentHP != beforeHP)
+        {
+          NotifyHpChanged();
+        }
+      }
+
+      void NotifyHpChanged()
+      {
+        if(OnHpChanged != null)
+        {
+          OnHpChanged(currentHP, maxHP);
+        }
       }
 
       void ApplyBodyMaterial()
