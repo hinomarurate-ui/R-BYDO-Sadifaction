@@ -24,10 +24,12 @@ public class Bullet : MonoBehaviour
 
     public void Init(Vector2 dir,float speed)
     {
-         rb = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
         Dir = dir.normalized;
         Speed = speed;
         rb.velocity = Dir * Speed;
+        float angle = Mathf.Atan2(Dir.y,Dir.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.AngleAxis(angle,Vector3.forward);
         Destroy(gameObject,Range);
     }
 

@@ -12,6 +12,8 @@ public class Shot : MonoBehaviour
     float BulletSpeed;
     [SerializeField]
     float ShotCooltime;
+    [SerializeField]
+    float AimDeadzone = 0.2f;
     AudioSource As;
     [SerializeField] AudioClip ShotS;
 
@@ -42,8 +44,46 @@ public class Shot : MonoBehaviour
         LastShotTime = Time.time;
         GameObject Bullet = Instantiate(BydoShot,ShotPoint.position,Quaternion.identity);
         float Dirx = Mathf.Sign(PlayerTransform.localScale.x);
-        Vector2 ShotDir = new Vector2(Dirx,0f);
+        Vector2 ShotDir = getShotDirection();
         Bullet bullet = Bullet.GetComponent<Bullet>();
         bullet.Init(ShotDir,BulletSpeed);
+    }
+
+    Vector2 getShotDirection()
+    {
+        float faceDir = Mathf.Sign(PlayerTransform.localScale.x);
+        if(faceDir == 0f)
+        {
+            faceDir = 1f;
+        }
+
+        float inputX = Input.GetAxisRaw("Horizontal");
+        float inputY = Input.GetAxisRaw("Vertical");
+
+        if(Mathf.Abs(inputX) <= AimDeadzone)
+        {
+            inputX = 0f;
+        }
+        else
+        {
+            inputX = Mathf.Sign(inputX);
+        }
+
+        if(Mathf.Abs(inputY) <= AimDeadzone)
+        {
+            inputY = 0f;
+        }
+        else
+        {
+            inputY = Mathf.Sign(inputY);
+        }
+
+        Vector2 inputDirection = new Vector2(inputX,inputY);
+        if(inputDirection.sqrMagnitude > 0f)
+        {
+            return inputDirection.normalized;
+        }
+
+        return new Vector2(faceDir,0f);
     }
 }

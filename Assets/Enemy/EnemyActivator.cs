@@ -34,9 +34,20 @@ public class EnemyActivator : MonoBehaviour
         bodyRigidbody.simulated = true;
         bodyCollider.enabled = true;
         enemyHP.enabled = true;
+        if(enemyAttack != null)
+        {
         enemyAttack.enabled = true;
+        }
+
+        if(enemyMove != null)
+        {
         enemyMove.enabled = true;
+        }
+
+        if(enemy != null)
+        {
         enemy.enabled = true;
+        }
         
     }
 
@@ -48,8 +59,19 @@ public class EnemyActivator : MonoBehaviour
         bodyRigidbody.simulated = false;
         bodyCollider.enabled = false;
         enemyHP.enabled = false;
+        if(enemyAttack != null)
+        {
         enemyAttack.enabled = false;
+        }
+
+        if(enemyMove != null)
+        {
         enemyMove.enabled = false;
+        }
+
+        if(enemy != null)
+        {
         enemy.enabled = false;
+        }
     }
 }

@@ -18,7 +18,7 @@ public class Enemy : MonoBehaviour
     void Awake()
     {
         HP.Init(Status);
-        Move.Init(Status);
+        //Move.Init(Status);
         ground = transform.Find("GroundChecker").gameObject.GetComponent<GroundCheck>();
         gake = transform.Find("GakeChecker").gameObject.GetComponent<GakeChecker>();
 

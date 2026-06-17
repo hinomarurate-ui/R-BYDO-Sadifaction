@@ -141,7 +141,7 @@ using System.Collections;
 
      void Update()
      {
-        horizontalKey = Input.GetAxisRaw("Horizontal");
+        horizontalKey = IsAimLockHeld () ? 0f : Input.GetAxisRaw("Horizontal");
 
         if(!isExActing && Input.GetButtonDown("Jump"))
         JumpQueed = true;
@@ -169,6 +169,11 @@ using System.Collections;
 
         shotHeld = !isExActing && Input.GetKey(KeyCode.Z);
         
+     }
+
+     bool IsAimLockHeld()
+     {
+      return Input.GetKey(KeyCode.B) || Input.GetKey(KeyCode.JoystickButton1);
      }
 
       void FixedUpdate()
