@@ -1,6 +1,7 @@
 using System.Collections;
  using System.Collections.Generic;
  using UnityEngine;
+ // 実装意図: プレイヤー本体として、移動・HP・通常近接・BydoClaw・BydoMissile の入力と実行をまとめる。
  public class Tikuwa : MonoBehaviour
  {
      //インスペクターで設定する
@@ -100,6 +101,7 @@ using System.Collections;
 
      void Start()
      {
+          // 実装意図: HP/UI 通知と物理素材を開始時に整え、以降の入力処理は cached component を使う。
           //コンポーネントのインスタンスを捕まえる
           anim = GetComponent<Animator>();
           rb = GetComponent<Rigidbody2D>();
@@ -114,6 +116,7 @@ using System.Collections;
 
       public void Damage(int damage)
       {
+        // 実装意図: HP の変更通知をここに集約し、UI 側は OnHpChanged だけを見ればよいようにする。
         int beforeHP= currentHP;
         currentHP = Mathf.Clamp(currentHP - damage, 0, maxHP);
         if(currentHP != beforeHP)
@@ -132,6 +135,9 @@ using System.Collections;
 
       void ApplyBodyMaterial()
       {
+        // 実装意図: プレイヤー collider の摩擦を実行時 material に分離し、共有 material を汚さない。
+        if(bodyCollider == null) return;
+
         runtimeBodyMaterial = new PhysicsMaterial2D("PlayerNoFriction");
         runtimeBodyMaterial.friction = colliderFriction;
         runtimeBodyMaterial.bounciness = colliderBounciness;
@@ -141,6 +147,7 @@ using System.Collections;
 
      void Update()
      {
+        // 実装意図: 入力は Update でキュー化し、物理反映は FixedUpdate に寄せる。
         horizontalKey = IsAimLockHeld () ? 0f : Input.GetAxisRaw("Horizontal");
 
         if(!isExActing && Input.GetButtonDown("Jump"))
@@ -151,19 +158,19 @@ using System.Collections;
 
         if (!isExActing && Input.GetKeyDown(KeyCode.X))
         {
-        As.PlayOneShot(ClawS,0.5f);
+        PlayOneShot(ClawS);
         MeleeQueed = true;
         }
 
         if (!isExActing && Input.GetKeyDown(KeyCode.E))
         {
-        As.PlayOneShot(Charge,0.5f);
+        PlayOneShot(Charge);
         BydoClawQueed = true;
         }
 
         if (!isExActing && Input.GetKeyDown(KeyCode.Q))
         {
-        As.PlayOneShot(Charge,0.5f);
+        PlayOneShot(Charge);
         bydoMissileQueed = true;
         }
 
@@ -178,6 +185,7 @@ using System.Collections;
 
       void FixedUpdate()
       {
+          // 実装意図: 移動・ジャンプ・EX 行動の速度合成を 1 箇所に集め、Rigidbody2D への代入を最後にまとめる。
           //接地判定を得る
           isGround = ground.IsGround();
 
@@ -259,7 +267,7 @@ using System.Collections;
               anim.SetBool("run", false);
               xSpeed = 0.0f;
           }
-          if(Input.GetKey(KeyCode.Z)){
+          if(shotHeld){
             anim.SetBool("Shot", true);
           }
           else{
@@ -276,6 +284,7 @@ using System.Collections;
       }
 
       IEnumerator ClawAnimation(){
+        // 実装意図: 通常近接はアニメーション開始後に少し遅れて判定を出し、見た目と当たりを合わせる。
         if(clawC == 0) anim.SetBool("Claw", true);
         else anim.SetBool("ClawP", true); 
 
@@ -291,6 +300,7 @@ using System.Collections;
 
       IEnumerator BydoClawCombo()
       {
+        // 実装意図: BydoClaw 中は通常入力を止め、連続ステップ攻撃を 1 つの排他行動として扱う。
         isExActing = true;
 
         JumpQueed = false;
@@ -317,7 +327,7 @@ using System.Collections;
         for (int i = 0; i < bydoClawCount; i++)
         {
           anim.SetInteger("EXClawC",1+i);
-          As.PlayOneShot(ClawS,0.5f);
+          PlayOneShot(ClawS);
           yield return StartCoroutine(BydoClawStep());
 
           if(i < bydoClawCount - 1 && bydoClawInterval > 0f)
@@ -328,7 +338,7 @@ using System.Collections;
           
         }
 
-        As.PlayOneShot(ClawSEnd,0.5f);
+        PlayOneShot(ClawSEnd);
 
         currentBydoClawStep = 0f;
         anim.SetBool("EXClaw", false);
@@ -346,6 +356,7 @@ using System.Collections;
         }
 
       IEnumerator BydoClawStep(){
+        // 実装意図: 1 段ごとに前進速度とヒット判定のタイミングを分け、連撃の手触りを作る。
 
         float stepSpeed = 0f;
         if (bydoClawStepCooltime > 0f)
@@ -375,6 +386,7 @@ using System.Collections;
 
       IEnumerator BydoMissile()
       {
+        // 実装意図: ミサイル発射中はプレイヤー操作を一時停止し、専用 pose sprite でチャージ/発射を表現する。
         isExActing = true;
         JumpQueed = false;
         MeleeQueed = false;
@@ -401,7 +413,7 @@ using System.Collections;
         for (int i = 0; i < bydoMissileCount; i++)
         {
           SpawnBydoMissile(i);
-          As.PlayOneShot(misairu,0.5f);
+          PlayOneShot(misairu);
 
           if (i < bydoMissileCount - 1 && bydoMissileInterval > 0f)
           {
@@ -421,6 +433,7 @@ using System.Collections;
 
     void TryMelee()
     {
+        // 実装意図: 通常近接は軽い cooldown と交互モーションで連打感を作る。
         if(Time.time < lastMeleeTime + meleeCooltime) return;
         lastMeleeTime = Time.time;
 
@@ -432,6 +445,7 @@ using System.Collections;
 
     void TryBydoClaw()
     {
+        // 実装意図: EX 行動の多重起動を防ぎ、BydoClaw の coroutine を単独で走らせる。
         if(isExActing)return;
         if(Time.time < lastBydoClawTime + bydoClawCooltime) return;
         lastBydoClawTime = Time.time;
@@ -444,6 +458,7 @@ using System.Collections;
 
       void TryBydoMissile()
       {
+        // 実装意図: ミサイルも EX 行動として排他にし、他の攻撃 coroutine と重ならないようにする。
         if(isExActing)return;
         if(Time.time < lastbydoMissileTime + bydoMissileCooltime) return;
         lastbydoMissileTime = Time.time;
@@ -453,7 +468,14 @@ using System.Collections;
 
       void SetBydoMissilePose(Sprite poseSprite)
       {
-        anim.enabled = false;
+        // 実装意図: 既存 Animator にミサイル専用 state を増やさず、発射中だけ SpriteRenderer を直接差し替える。
+        if(sr == null || poseSprite == null) return;
+
+        if(anim != null)
+        {
+          anim.enabled = false;
+        }
+
         sr.sprite = poseSprite;
       }
 
@@ -467,6 +489,7 @@ using System.Collections;
 
       void SpawnBydoMissile(int missileIndex)
       {
+        // 実装意図: 複数発を上下にずらして出し、各 Missile に追尾対象条件とダメージを渡す。
         if (bydoMissilePrefab == null) return;
 
         float dirX = Mathf.Sign(transform.localScale.x);
@@ -480,58 +503,57 @@ using System.Collections;
         Vector3 spawnPosition = origin + spawnOffset;
 
         GameObject missileObject = Instantiate(bydoMissilePrefab, spawnPosition, Quaternion.identity);
-        Missile Missile = missileObject.GetComponent<Missile>();
+        Missile missile = missileObject.GetComponent<Missile>();
+        if (missile == null)
+        {
+          Destroy(missileObject);
+          return;
+        }
 
         Vector2 initialDirection = new Vector2(dirX, -0.15f * centeredIndex).normalized;
-        Missile.Init(initialDirection, dirX, bydoClawDamage, enemyLayers, bydoMissileSeekRange, bydoMissileKillShakePower, bydoMissileKillShakeTime);
-        //a
+        missile.Init(initialDirection, dirX, bydoMissileDamage, enemyLayers, bydoMissileSeekRange, bydoMissileKillShakePower, bydoMissileKillShakeTime);
       }
 
       void DoMeleeHit()
       {
+        DamageEnemiesInCircle(meleeRadius, meleeDamage, meleeKillShakePower, meleeKillShakeTime);
+      }
+
+      void DoBydoClawHit(float hitRadius, int damage)
+      {
+        DamageEnemiesInCircle(hitRadius, damage, bydoClawShakePower, bydoClawShakeTime);
+      }
+
+      void DamageEnemiesInCircle(float hitRadius, int damage, float shakePower, float shakeTime)
+      {
+        // 実装意図: 敵の実装クラスではなく IDamageable を叩き、同一対象への多重ヒットを防ぐ。
         if (meleePoint == null) return;
 
-        var hits = Physics2D.OverlapCircleAll(meleePoint.position, meleeRadius, enemyLayers);
+        var hits = Physics2D.OverlapCircleAll(meleePoint.position, hitRadius, enemyLayers);
 
-        var damaged = new System.Collections.Generic.HashSet<GameObject>();
+        var damaged = new System.Collections.Generic.HashSet<IDamageable>();
 
         foreach (var h in hits)
         {
             if (h == null) continue;
-            var go = h.gameObject;
-            if (damaged.Contains(go)) continue;
-            damaged.Add(go);
 
-            var hp = h.GetComponent<EnemyHP>();
-            if(hp != null && hp.Damage(meleeDamage))
+            IDamageable damageable = h.GetComponentInParent<IDamageable>();
+            if(damageable == null || damaged.Contains(damageable)) continue;
+
+            damaged.Add(damageable);
+            if(damageable.TakeDamage(damage))
             {
-              ShakeScreen.Shake(meleeKillShakePower,meleeKillShakeTime);
+              ShakeScreen.Shake(shakePower,shakeTime);
             }
             
         }
       }
 
-      void DoBydoClawHit(float hitRadius, int damage)
+      void PlayOneShot(AudioClip clip)
       {
-        if (meleePoint == null) return;
-
-        var hits = Physics2D.OverlapCircleAll(meleePoint.position, hitRadius, enemyLayers);
-
-        var damaged = new System.Collections.Generic.HashSet<GameObject>();
-
-        foreach (var h in hits)
+        if(As != null && clip != null)
         {
-            if (h == null) continue;
-            var go = h.gameObject;
-            if (damaged.Contains(go)) continue;
-            damaged.Add(go);
-
-            var hp = h.GetComponent<EnemyHP>();
-            if(hp != null && hp.Damage(meleeDamage))
-            {
-              ShakeScreen.Shake(bydoClawShakePower,bydoClawShakeTime);
-            }
-            
+          As.PlayOneShot(clip,0.5f);
         }
       }
  }

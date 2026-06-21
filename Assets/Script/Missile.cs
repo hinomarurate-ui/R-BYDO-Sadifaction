@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// 実装意図: プレイヤーの Bydo ミサイルとして、前方の IDamageable を短時間追尾して攻撃する。
 public class Missile : MonoBehaviour
 {
     [SerializeField] float speed = 20f;
@@ -22,6 +23,7 @@ public class Missile : MonoBehaviour
 
     public void Init(Vector2 initialDirection, float facing, int damageValue, LayerMask targetLayers, float seekRange, float shakePower, float shakeTime)
     {
+        // 実装意図: 発射元から向き・対象レイヤー・火力を渡し、プレイヤー側の調整値を弾へ注入する。
         rb = GetComponent<Rigidbody2D>();
         facingDir = facing == 0f ? 1f : Mathf.Sign(facing);
         currentDirection = initialDirection.sqrMagnitude > 0f ? initialDirection.normalized : new Vector2(facingDir, 0f);
@@ -32,17 +34,39 @@ public class Missile : MonoBehaviour
         killShakeTime = shakeTime;
         homingEndTime = Time.time + homingTime;
 
-        if (rb == null) return;
         Destroy(gameObject, lifeTime);
+        if (rb == null) return;
 
-        if (Time.time >= nextTargetRefreshTime || !IsValidTarget(target))
+        RefreshTargetIfNeeded();
+        RotateTowardTarget();
+        ApplyVelocity();
+    }
+
+    void FixedUpdate()
+    {
+        if(rb == null) return;
+
+        if(Time.time <= homingEndTime)
         {
-            target = AcquireTarget();
-            nextTargetRefreshTime = Time.time + targetRefreshInterval;
+            RefreshTargetIfNeeded();
+            RotateTowardTarget();
         }
 
+        ApplyVelocity();
+    }
+
+    void RefreshTargetIfNeeded()
+    {
+        if(Time.time < nextTargetRefreshTime && IsValidTarget(target)) return;
+
+        target = AcquireTarget();
+        nextTargetRefreshTime = Time.time + targetRefreshInterval;
+    }
+
+    void RotateTowardTarget()
+    {
         Vector2 desiredDirection = currentDirection;
-        if (IsValidTarget(target))
+        if(IsValidTarget(target))
         {
             desiredDirection = ((Vector2)target.position - rb.position).normalized;
         }
@@ -54,47 +78,17 @@ public class Missile : MonoBehaviour
         {
             currentDirection = new Vector2(facingDir, 0f);
         }
-
-        rb.velocity = currentDirection * speed;
-        RotateToVelocity();
-        
     }
 
-    void FixedUpdate()
+    void ApplyVelocity()
     {
-        if(rb == null) return;
-
-        if(Time.time <= homingEndTime)
-        {
-            
-            if(Time.time >= nextTargetRefreshTime || !IsValidTarget(target))
-            {
-                
-                target = AcquireTarget();
-                nextTargetRefreshTime = Time.time + targetRefreshInterval;
-            }
-
-            Vector2 desiredDirection = currentDirection;
-            if(IsValidTarget(target))
-            {
-                desiredDirection = ((Vector2)target.position - rb.position).normalized;
-            }
-
-            float maxRadiansDelta = turnSpeed * Mathf.Deg2Rad * Time.fixedDeltaTime;
-            Vector3 rotatedDirection = Vector3.RotateTowards(currentDirection,desiredDirection,maxRadiansDelta,0f);
-            currentDirection = new Vector2(rotatedDirection.x, rotatedDirection.y).normalized;
-            if(currentDirection.sqrMagnitude <= 0.0001f)
-            {
-                currentDirection = new Vector2(facingDir, 0f);
-            }
-        }
-
         rb.velocity = currentDirection * speed;
         RotateToVelocity();
     }
 
     Transform AcquireTarget()
     {
+        // 実装意図: 画面内かつ進行方向側の敵だけを狙い、背後や画面外への不自然なホーミングを防ぐ。
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, targetRange, enemyLayers);
         Transform closesTarget = null;
         float closestDistance = float.MaxValue;
@@ -103,7 +97,7 @@ public class Missile : MonoBehaviour
         {
             if (hit == null) continue;
 
-            EnemyHP enemyHP = hit.GetComponent<EnemyHP>();
+            IDamageable enemyHP = hit.GetComponentInParent<IDamageable>();
             if (enemyHP == null) continue;
             if (!IsOnScreen(hit.transform.position)) continue;
 
@@ -147,12 +141,13 @@ public class Missile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        EnemyHP enemy = collision.GetComponent<EnemyHP>();
+        // 実装意図: 敵の実装クラスではなく IDamageable を見て、OOP 化後の敵にも同じ弾を当てる。
+        IDamageable enemy = collision.GetComponentInParent<IDamageable>();
         if (enemy == null) return;
 
 
 
-        if(enemy.Damage(damage))
+        if(enemy.TakeDamage(damage))
         {
            ShakeScreen.Shake(killShakePower,killShakeTime);
         }

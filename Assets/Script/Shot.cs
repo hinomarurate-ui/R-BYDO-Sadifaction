@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 実装意図: プレイヤー通常射撃の入力・発射間隔・弾生成をまとめ、弾の移動処理とは分離する。
 public class Shot : MonoBehaviour
 {
     [SerializeField]
@@ -22,8 +23,8 @@ public class Shot : MonoBehaviour
 
     void Start()
     {
-     PlayerTransform = this.transform;
-    As = GetComponent<AudioSource>();
+        PlayerTransform = transform;
+        As = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -36,21 +37,31 @@ public class Shot : MonoBehaviour
 
     void Shoot()
     {
+        // 実装意図: cooldown と prefab 未設定を入口で弾き、発射処理中の null 例外を避ける。
         if(Time.time < LastShotTime + ShotCooltime)
         {
             return;
         }
-        As.PlayOneShot(ShotS,0.5f);
+
+        if(BydoShot == null || ShotPoint == null)
+        {
+            return;
+        }
+
+        PlayShotSound();
         LastShotTime = Time.time;
-        GameObject Bullet = Instantiate(BydoShot,ShotPoint.position,Quaternion.identity);
-        float Dirx = Mathf.Sign(PlayerTransform.localScale.x);
+        GameObject bulletObject = Instantiate(BydoShot,ShotPoint.position,Quaternion.identity);
         Vector2 ShotDir = getShotDirection();
-        Bullet bullet = Bullet.GetComponent<Bullet>();
-        bullet.Init(ShotDir,BulletSpeed);
+        Bullet bullet = bulletObject.GetComponent<Bullet>();
+        if(bullet != null)
+        {
+            bullet.Init(ShotDir,BulletSpeed);
+        }
     }
 
     Vector2 getShotDirection()
     {
+        // 実装意図: 入力がある時は 8 方向狙い、無入力時はキャラの向きへ撃つ操作感にする。
         float faceDir = Mathf.Sign(PlayerTransform.localScale.x);
         if(faceDir == 0f)
         {
@@ -85,5 +96,13 @@ public class Shot : MonoBehaviour
         }
 
         return new Vector2(faceDir,0f);
+    }
+
+    void PlayShotSound()
+    {
+        if(As != null && ShotS != null)
+        {
+            As.PlayOneShot(ShotS,0.5f);
+        }
     }
 }

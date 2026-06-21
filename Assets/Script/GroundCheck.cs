@@ -1,69 +1,67 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 実装意図: 接地 trigger の接触候補から、本当に足元にある Ground だけを接地として返す。
 public class GroundCheck : MonoBehaviour
 {
-     private string groundTag = "Ground";
-     float Yuka = 0.05f;
-     private bool isGround = false; 
-     private bool isGroundEnter, isGroundStay, isGroundExit;
-     readonly HashSet<Collider2D> TouchGround = new HashSet<Collider2D>();
+    const string GroundTag = "Ground";
+    const float GroundTolerance = 0.05f;
 
-     Collider2D ownCollider;
+    readonly HashSet<Collider2D> touchGround = new HashSet<Collider2D>();
+
+    Collider2D ownCollider;
 
     void Awake()
     {
         ownCollider = GetComponent<Collider2D>();
     }
 
-     //接地判定を返すメソッド
-　　　//物理判定の更新毎に呼ぶ必要がある
-     public bool IsGround()
-     {    
-          if (ownCollider == null)
-          {
+    public bool IsGround()
+    {
+        // 実装意図: 接触中 collider を集合で持ち、複数床や一時的な Exit 漏れに強くする。
+        if(ownCollider == null)
+        {
             return false;
-          }
+        }
 
-          TouchGround.RemoveWhere(collision => collision == null || !collision.enabled);
+        touchGround.RemoveWhere(collision => collision == null || !collision.enabled);
 
-          foreach (Collider2D collision in TouchGround)
-          {
+        foreach(Collider2D collision in touchGround)
+        {
             if(IsGroundSurface(collision))
             {
                 return true;
             }
-          }
-          return false;
-     }
+        }
 
-     private bool IsGroundSurface(Collider2D collision)
-     {
-        if(collision == null || !collision.CompareTag(groundTag))
+        return false;
+    }
+
+    bool IsGroundSurface(Collider2D collision)
+    {
+        // 実装意図: 横や上から触れた Ground を接地扱いしないよう、高さで足元判定を絞る。
+        if(collision == null || !collision.CompareTag(GroundTag))
         {
             return false;
         }
 
         float checkerTopY = ownCollider.bounds.max.y;
-        float groundsTopY = collision.bounds.max.y;
-        return groundsTopY <= checkerTopY + Yuka;
-     }
+        float groundTopY = collision.bounds.max.y;
+        return groundTopY <= checkerTopY + GroundTolerance;
+    }
 
-     private void OnTriggerEnter2D(Collider2D collision)
-     
-     {
-        TouchGround.Add(collision);
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        touchGround.Add(collision);
+    }
 
-     }
+    void OnTriggerStay2D(Collider2D collision)
+    {
+        touchGround.Add(collision);
+    }
 
-     private void OnTriggerStay2D(Collider2D collision)
-     {
-          TouchGround.Add(collision);
-     }
-
-     private void OnTriggerExit2D(Collider2D collision)
-     {
-          TouchGround.Remove(collision);
-     }
- }
+    void OnTriggerExit2D(Collider2D collision)
+    {
+        touchGround.Remove(collision);
+    }
+}

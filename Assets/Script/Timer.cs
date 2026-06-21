@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+// 実装意図: 経過時間を分秒で表示するだけの軽い UI component として、ゲーム進行ロジックから分離する。
 public class Timer : MonoBehaviour
 {
     private float sec;
@@ -14,13 +15,17 @@ public class Timer : MonoBehaviour
     void Update()
     {
         sec += Time.deltaTime;
-        if(sec > 60){
+        if(sec >= 60f)
+        {
 
-            sec = 0;
+            sec -= 60f;
 
             min++;
         }
 
-        dateTimeText.text = min.ToString("00") + ":" + ((int)sec).ToString("00");
+        if(dateTimeText != null)
+        {
+            dateTimeText.text = min.ToString("00") + ":" + ((int)sec).ToString("00");
+        }
     }
 }

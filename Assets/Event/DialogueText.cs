@@ -2,6 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
+// 実装意図: 会話 UI の表示・タイプライター演出・スキップ処理だけを担当し、入力管理から分離する。
 public class DialogueText : MonoBehaviour
 {
     [SerializeField] GameObject panelRoot;
@@ -26,7 +27,7 @@ public class DialogueText : MonoBehaviour
     public void Open()
     {
         isOpen = true;
-        panelRoot.SetActive(true);
+        if(panelRoot != null) panelRoot.SetActive(true);
     }
 
     public void Close()
@@ -35,18 +36,25 @@ public class DialogueText : MonoBehaviour
         if(co != null) StopCoroutine(co);
         co = null;
 
-        panelRoot.SetActive(false);
-        Name.text = "";
-        Talk.text = "";
-        continueObj.SetActive(false);
+        if(panelRoot != null) panelRoot.SetActive(false);
+        if(Name != null) Name.text = "";
+        if(Talk != null) Talk.text = "";
+        if(continueObj != null) continueObj.SetActive(false);
 
         isTyping = false;
         
     }
 
-        public void Setline(string name,string talk)
+    public void Setline(string name,string talk)
     {
-        Name.text = name;
+        // 実装意図: 行切り替え時は前の coroutine を止め、常に最新行だけを表示進行させる。
+        if(Name != null) Name.text = name;
+        if(Talk == null)
+        {
+            isTyping = false;
+            return;
+        }
+
         Talk.text = talk;
         Talk.maxVisibleCharacters = 0;
         Talk.ForceMeshUpdate();
@@ -72,8 +80,15 @@ public class DialogueText : MonoBehaviour
 
     IEnumerator TypeByUnscaledTime ()
     {
+        // 実装意図: Time.timeScale が 0 の会話中でも文字送りが進むよう unscaledDeltaTime を使う。
         isTyping = true;
         if (continueObj)continueObj.SetActive(false);
+
+        if(Talk == null)
+        {
+            isTyping = false;
+            yield break;
+        }
 
         Talk.ForceMeshUpdate();
         int total = Talk.textInfo.characterCount;

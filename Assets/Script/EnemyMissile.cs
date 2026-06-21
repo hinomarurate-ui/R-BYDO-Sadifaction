@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 実装意図: Pstaff のミサイル弾として、発射直後の浮き上がり・直進・短時間追尾を 1 弾体に閉じ込める。
 public class EnemyMissile : MonoBehaviour
 {
     [SerializeField] int damage = 10;
@@ -19,11 +20,7 @@ public class EnemyMissile : MonoBehaviour
     
     void Update()
     {
-        if(rb != null && rb.velocity.sqrMagnitude > 0.001f)
-        {
-            float angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        }
+        RotateToVelocity();
 
         if(isHoming)
         {
@@ -33,23 +30,28 @@ public class EnemyMissile : MonoBehaviour
 
     public void Init(Vector2 dir, float speedValue, float lifeTimeValue, int damageValue)
     {
+        // 実装意図: 生成元の攻撃パターンから方向・速度・寿命・ダメージを渡し、敵種ごとの差を外へ出す。
         rb = GetComponent<Rigidbody2D>();
         damage = damageValue;
         shotSpeed = speedValue;
-        moveDir = dir.normalized;
+        moveDir = dir.sqrMagnitude > 0f ? dir.normalized : Vector2.right;
         GameObject playerObject = GameObject.FindWithTag("Player");
         if(playerObject != null)
         {
             player = playerObject.transform;
         }
 
-        StartCoroutine(MoveUpThenShot(dir, speedValue));
-
         Destroy(gameObject, lifeTimeValue);
+        if(rb == null) return;
+
+        StartCoroutine(MoveUpThenShot(moveDir, speedValue));
     }
 
     IEnumerator MoveUpThenShot(Vector2 dir, float speedValue)
     {
+        // 実装意図: 旧 Pstaff の「一度浮いてから飛ぶ」見た目を、攻撃 controller ではなく弾側で再現する。
+        if(rb == null) yield break;
+
         rb.velocity = new Vector2(1,1) * upSpeed;
         yield return new WaitForSeconds(upTime);
         moveDir = -dir.normalized;
@@ -61,6 +63,13 @@ public class EnemyMissile : MonoBehaviour
 
     void HomingMove()
     {
+        // 実装意図: 追尾時間を短く区切り、避けられるミサイルとしての体感を残す。
+        if(rb == null)
+        {
+            isHoming = false;
+            return;
+        }
+
         if(Time.time > homingEndTime)
         {
             isHoming = false;
@@ -74,6 +83,17 @@ public class EnemyMissile : MonoBehaviour
         }
 
         rb.velocity = moveDir.normalized * shotSpeed;
+    }
+
+    void RotateToVelocity()
+    {
+        if(rb == null || rb.velocity.sqrMagnitude <= 0.001f)
+        {
+            return;
+        }
+
+        float angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
     }
 
     void OnTriggerEnter2D(Collider2D collision)

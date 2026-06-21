@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+// 実装意図: Tikuwa の HP 変更イベントを受けて、UI Image の fillAmount だけを更新する表示専用 component。
 public class PlayerHPUI : MonoBehaviour
 {
     public Tikuwa player;
@@ -10,6 +11,7 @@ public class PlayerHPUI : MonoBehaviour
 
     void OnEnable()
     {
+        // 実装意図: Inspector 参照が未設定でも Player タグから最低限動くように自動解決する。
         if(player == null)
         {
             GameObject playerObject = GameObject.FindGameObjectWithTag("Player");

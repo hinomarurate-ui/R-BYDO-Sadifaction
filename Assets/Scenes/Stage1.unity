@@ -1935,7 +1935,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 390991400}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a602a339316b12d4b8a5667875a52233, type: 3}
+  m_Script: {fileID: 11500000, guid: e538b32b4cf3412587b08aa6875a647d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ground: {fileID: 0}
@@ -10246,14 +10246,6 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: 8b084263498161b40bfb9333e988a89b, type: 3}
     - target: {fileID: 5950868178451081494, guid: 53b8d865f1e713043910e461f256ed0e, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8610243365911130500, guid: 53b8d865f1e713043910e461f256ed0e, type: 3}
-      propertyPath: Dirx
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8610243365911130500, guid: 53b8d865f1e713043910e461f256ed0e, type: 3}
-      propertyPath: MoveSpeed
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8610243365911130500, guid: 53b8d865f1e713043910e461f256ed0e, type: 3}
