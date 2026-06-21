@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(menuName = "Game/Enemy Definition")]
 public class EnemyDefinition : ScriptableObject
@@ -30,29 +31,33 @@ public class EnemyDefinition : ScriptableObject
     public virtual AnimationSettings Animation { get { return animation; } }
 
     [Serializable]
-public class GroundPatrolSettings
+    public class GroundPatrolSettings
     {
         public float moveSpeed = 2f;
         public float directionX = -1f;
         public float jumpImpulse = 5f;
         public float jumpPower = 0.6f;
-        public float jumpSlow = 2f;
-        public float maxHeight = 0.7f;
+        [FormerlySerializedAs("jumpSlow")]
+        public float jumpSlowHeight = 2f;
+        [FormerlySerializedAs("maxHeight")]
+        public float maxJumpHeight = 0.7f;
         public float jumpChargeTime = 0.5f;
         public float postJumpLockTime = 0.3f;
     }
 
     [Serializable]
-public class AttackSettings
+    public class AttackSettings
     {
         public float searchRange = 8f;
-        public float attackCooltime = 2f;
+        [FormerlySerializedAs("attackCooltime")]
+        public float attackCooldown = 2f;
         public float chargeTime = 0.35f;
         public float endTime = 0.25f;
         public float bulletSpeed = 6f;
         public float bulletLifeTime = 3f;
         public int bulletCount = 1;
-        public float bulletAngleSpace = 12f;
+        [FormerlySerializedAs("bulletAngleSpace")]
+        public float bulletAngleSpacing = 12f;
         public float bulletInterval = 0.1f;
         public int bulletDamage = 15;
         public float aimHeight = 0.5f;
@@ -65,7 +70,7 @@ public class AttackSettings
     }
 
     [Serializable]
-public class DeathSettings
+    public class DeathSettings
     {
         public float deathTorque = 5f;
         public float fadeTime = 1f;
@@ -78,7 +83,7 @@ public class DeathSettings
     }
 
     [Serializable]
-public class AnimationSettings
+    public class AnimationSettings
     {
         public string walkBool = "Walk";
         public string jumpBool = "Jump";

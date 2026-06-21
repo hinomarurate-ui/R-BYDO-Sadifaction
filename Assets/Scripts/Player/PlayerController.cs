@@ -1,545 +1,623 @@
-﻿using System.Collections;
- using System.Collections.Generic;
- using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Serialization;
+
 public class PlayerController : MonoBehaviour, IDamageable
- {
-     public float speed; //騾溷ｺｦ
-     public float gravity; //驥榊鴨
-     public float jumpSpeed;
-     public float jumpHeight;
-     public GroundSensor ground;
+{
+    const float DefaultFacingScale = 0.6f;
 
-     [Header("HP")]
-     [SerializeField] int maxHP = 100;
-     [SerializeField] int currentHP;
+    [Header("Movement")]
+    [FormerlySerializedAs("speed")]
+    [SerializeField] float moveSpeed = 6f;
+    [FormerlySerializedAs("gravity")]
+    [SerializeField] float gravity = 25f;
+    [SerializeField] float jumpSpeed = 12f;
+    [SerializeField] float jumpHeight = 2f;
+    [FormerlySerializedAs("ground")]
+    [SerializeField] GroundSensor groundSensor;
 
-     public int MaxHP { get { return maxHP; } }
-     public int CurrentHP { get { return currentHP; } }
-     public float HpRate { get { return maxHP <= 0 ? 0f : (float)currentHP / maxHP; } }
-     public event  System.Action<int, int> OnHpChanged;
+    [Header("HP")]
+    [SerializeField] int maxHP = 100;
+    [SerializeField] int currentHP;
 
-     [SerializeField] private float colliderFriction = 0f;
-     [SerializeField] private float colliderBounciness = 0f;
-     private Collider2D bodyCollider = null;
-     private PhysicsMaterial2D runtimeBodyMaterial = null;
-     private Animator anim = null;
-     private Rigidbody2D rb = null;
-     private SpriteRenderer sr = null;
-     private bool isGround = false;
-     private bool isJump = false;
-     private float jumpPos = 0.0f;
-     private int clawC = 0;
+    [Header("Body")]
+    [SerializeField] float colliderFriction;
+    [SerializeField] float colliderBounciness;
 
-     private float horizontalKey;
-     private bool jumpHeld;
-     private bool shotHeld;
-     float ySpeed = 0.0f;
+    [Header("Melee")]
+    [SerializeField] Transform meleePoint;
+    [SerializeField] float meleeRadius = 0.6f;
+    [SerializeField] LayerMask enemyLayers;
+    [SerializeField] int meleeDamage = 1;
+    [SerializeField] float meleeCooltime = 0.25f;
+    [SerializeField] float hitDelay = 0.03f;
+    [SerializeField] float meleeStepSpeed = 10f;
+    [SerializeField] float meleeStepDeceleration = 40f;
+    [SerializeField] float meleeKillShakePower = 0.16f;
+    [SerializeField] float meleeKillShakeTime = 0.16f;
+    [FormerlySerializedAs("ClawS")]
+    [SerializeField] AudioClip meleeStartSound;
+    [FormerlySerializedAs("ClawSEnd")]
+    [SerializeField] AudioClip meleeEndSound;
 
-     [Header("Melee")]
-     [SerializeField] Transform meleePoint;
-     [SerializeField] float meleeRadius = 0.6f;
-     [SerializeField] LayerMask enemyLayers;
-     [SerializeField] int meleeDamage = 1;
-     [SerializeField] float meleeCooltime = 0.25f;
-     [SerializeField] float hitDelay = 0.03f;
-     [SerializeField] float meleeStepSpeed = 10f;
-     [SerializeField] float meleeStepDeceleration = 40f; //貂幃溽紫
-     [SerializeField] float meleeKillShakePower = 0.16f;
-     [SerializeField] float meleeKillShakeTime = 0.16f;
-     [SerializeField] AudioClip ClawS;
-     [SerializeField] AudioClip ClawSEnd;
-     AudioSource As;
+    [Header("Bydo Claw")]
+    [SerializeField] float bydoClawRadius = 2f;
+    [SerializeField] int bydoClawDamage = 3;
+    [SerializeField] float bydoClawCooltime = 1f;
+    [SerializeField] float bydoClawHitDelay = 0.05f;
+    [SerializeField] float bydoClawShakePower = 0.3f;
+    [SerializeField] float bydoClawShakeTime = 0.2f;
+    [SerializeField] float bydoClawStartTime = 0.12f;
+    [SerializeField] int bydoClawCount = 3;
+    [SerializeField] float bydoClawDistance = 3f;
+    [FormerlySerializedAs("bydoClawStepCooltime")]
+    [SerializeField] float bydoClawStepDuration = 0.08f;
+    [SerializeField] float bydoClawInterval = 0.05f;
+    [FormerlySerializedAs("Charge")]
+    [SerializeField] AudioClip chargeSound;
 
-     [Header("BydoClaw")]
-     [SerializeField] float bydoClawRadius = 2.0f;
-     [SerializeField] int bydoClawDamage = 3;
-     [SerializeField] float bydoClawCooltime = 1.0f;
-     [SerializeField] float bydoClawHitDelay = 0.05f;
-     [SerializeField] float bydoClawStepSpeed = 15f;
-     [SerializeField] float bydoClawShakePower = 0.3f;
-     [SerializeField] float bydoClawShakeTime = 0.2f;
-     [SerializeField] float bydoClawStartTime = 0.12f;
-     [SerializeField] int bydoClawCount = 3;
-     [SerializeField] float bydoClawDistance = 3f;
-     [SerializeField] float bydoClawStepCooltime = 0.08f;
-     [SerializeField] float bydoClawInterval = 0.05f;
-     [SerializeField] float bydoClawHit = 2.0f;
-     [SerializeField] AudioClip Charge;
+    [Header("Bydo Missile")]
+    [SerializeField] float bydoMissileCooltime = 1.5f;
+    [SerializeField] float bydoMissileStartTime = 0.35f;
+    [SerializeField] int bydoMissileCount = 3;
+    [SerializeField] float bydoMissileInterval = 0.16f;
+    [SerializeField] int bydoMissileDamage = 4;
+    [SerializeField] float bydoMissileSeekRange = 16f;
+    [SerializeField] float bydoMissileKillShakePower = 0.3f;
+    [SerializeField] float bydoMissileKillShakeTime = 0.2f;
+    [SerializeField] GameObject bydoMissilePrefab;
+    [SerializeField] Sprite bydoMissileChargeSprite;
+    [SerializeField] Sprite bydoMissileAttackSprite;
+    [FormerlySerializedAs("misairu")]
+    [SerializeField] AudioClip missileLaunchSound;
 
-     [Header("BydoMissile")]
-     [SerializeField] float bydoMissileCooltime = 1.5f;
-     [SerializeField] float bydoMissileStartTime = 0.35f;
-     [SerializeField] int bydoMissileCount = 3;
-     [SerializeField] float bydoMissileInterval = 0.16f;
-     [SerializeField] int bydoMissileDamage = 4;
-     [SerializeField] float bydoMissileSeekRange = 16f;
-     [SerializeField] float bydoMissileKillShakePower = 0.3f;
-     [SerializeField] float bydoMissileKillShakeTime = 0.2f;
-     [SerializeField] GameObject bydoMissilePrefab;
-     [SerializeField] Sprite bydoMissileChargeSprite;
-     [SerializeField] Sprite bydoMissileAttackSprite;
-     [SerializeField] AudioClip misairu;
+    Animator animator;
+    Rigidbody2D body;
+    SpriteRenderer spriteRenderer;
+    Collider2D bodyCollider;
+    AudioSource audioSource;
+    PhysicsMaterial2D runtimeBodyMaterial;
 
-     
+    float horizontalInput;
+    float verticalSpeed;
+    float jumpStartY;
+    float lastMeleeTime = -999f;
+    float lastBydoClawTime = -999f;
+    float lastBydoMissileTime = -999f;
+    float currentMeleeStep;
+    float currentBydoClawStep;
 
-     
+    bool isGrounded;
+    bool isJumping;
+    bool jumpHeld;
+    bool shotHeld;
+    bool jumpQueued;
+    bool meleeQueued;
+    bool bydoClawQueued;
+    bool bydoMissileQueued;
+    bool isSpecialActing;
 
-     float lastMeleeTime = -999f;
-     float lastBydoClawTime = -999f;
-     float lastbydoMissileTime = -999f;
-     float currentMeleeStep = 0f;
-     bool JumpQueed;
-     bool MeleeQueed;
-     bool BydoClawQueed;
-     float currentBydoClawStep;
-     bool bydoMissileQueed;
-     bool isExActing;
+    int meleeComboIndex;
 
+    public int MaxHP { get { return maxHP; } }
+    public int CurrentHP { get { return currentHP; } }
+    public float HpRate { get { return maxHP <= 0 ? 0f : (float)currentHP / maxHP; } }
+    public event Action<int, int> OnHpChanged;
 
-     void Start()
-     {
-          anim = GetComponent<Animator>();
-          rb = GetComponent<Rigidbody2D>();
-          sr = GetComponent<SpriteRenderer>();
-          As = GetComponent<AudioSource>();
-          bodyCollider = GetComponent<Collider2D>();
-          currentHP = maxHP;
-          NotifyHpChanged();
-          ApplyBodyMaterial();
+    void Awake()
+    {
+        animator = GetComponent<Animator>();
+        body = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        audioSource = GetComponent<AudioSource>();
+        bodyCollider = GetComponent<Collider2D>();
+    }
 
-      }
+    void Start()
+    {
+        currentHP = maxHP;
+        NotifyHpChanged();
+        ApplyBodyMaterial();
+    }
 
-      public DamageResult TakeDamage(DamageRequest request)
-      {
+    void OnDestroy()
+    {
+        if(runtimeBodyMaterial != null)
+        {
+            Destroy(runtimeBodyMaterial);
+        }
+    }
+
+    public DamageResult TakeDamage(DamageRequest request)
+    {
         if(request.Amount <= 0 || currentHP <= 0)
         {
-          return DamageResult.Ignored(currentHP, maxHP);
+            return DamageResult.Ignored(currentHP, maxHP);
         }
 
-        int beforeHP = currentHP;
+        int previousHP = currentHP;
         currentHP = Mathf.Clamp(currentHP - request.Amount, 0, maxHP);
-        if(currentHP != beforeHP)
+        if(currentHP != previousHP)
         {
-          NotifyHpChanged();
+            NotifyHpChanged();
         }
 
-        return new DamageResult(currentHP != beforeHP, currentHP <= 0, currentHP, maxHP);
-      }
+        return new DamageResult(currentHP != previousHP, currentHP <= 0, currentHP, maxHP);
+    }
 
-      void NotifyHpChanged()
-      {
-        if(OnHpChanged != null)
+    void Update()
+    {
+        CaptureInput();
+    }
+
+    void FixedUpdate()
+    {
+        RefreshGroundedState();
+
+        float xSpeed;
+        UpdateJumpVelocity();
+        RunQueuedActions();
+
+        if(isSpecialActing)
         {
-          OnHpChanged(currentHP, maxHP);
-        }
-      }
-
-      void ApplyBodyMaterial()
-      {
-        if(bodyCollider == null) return;
-
-        runtimeBodyMaterial = new PhysicsMaterial2D("PlayerNoFriction");
-        runtimeBodyMaterial.friction = colliderFriction;
-        runtimeBodyMaterial.bounciness = colliderBounciness;
-        bodyCollider.sharedMaterial = runtimeBodyMaterial;
-      }
-
-
-     void Update()
-     {
-        horizontalKey = IsAimLockHeld () ? 0f : Input.GetAxisRaw("Horizontal");
-
-        if(!isExActing && Input.GetButtonDown("Jump"))
-        JumpQueed = true;
-
-        
-        jumpHeld = !isExActing && Input.GetButton("Jump");
-
-        if (!isExActing && Input.GetKeyDown(KeyCode.X))
-        {
-        PlayOneShot(ClawS);
-        MeleeQueed = true;
-        }
-
-        if (!isExActing && Input.GetKeyDown(KeyCode.E))
-        {
-        PlayOneShot(Charge);
-        BydoClawQueed = true;
-        }
-
-        if (!isExActing && Input.GetKeyDown(KeyCode.Q))
-        {
-        PlayOneShot(Charge);
-        bydoMissileQueed = true;
-        }
-
-        shotHeld = !isExActing && Input.GetKey(KeyCode.Z);
-        
-     }
-
-     bool IsAimLockHeld()
-     {
-      return Input.GetKey(KeyCode.B) || Input.GetKey(KeyCode.JoystickButton1);
-     }
-
-      void FixedUpdate()
-      {
-          isGround = ground.IsGround();
-
-          float xSpeed = horizontalKey * speed;
-
-          if (isGround)
-          {
-              if (!isExActing && JumpQueed)
-              {
-                  JumpQueed = false;
-                  ySpeed = jumpSpeed;
-                  jumpPos = transform.position.y;
-                  isJump = true;
-                  anim.SetBool("jump", true);
-              }
-              else
-              {
-                  ySpeed = 0;
-                  isJump = false;
-                  anim.SetBool("jump", false);
-              }
-          }
-          else if (isJump)
-          {
-              if (jumpHeld && jumpPos + jumpHeight > transform.position.y)
-              {
-                  ySpeed = jumpSpeed;
-              }
-              else
-              {
-                ySpeed = -gravity;
-                  isJump = false;
-              }
-          }
-          else
-          {
-                ySpeed = -gravity;
-              }
-          if(!isExActing && MeleeQueed){
-
-            MeleeQueed = false;
-            TryMelee();
-          }
-
-          if(!isExActing && BydoClawQueed){
-
-            BydoClawQueed = false;
-            TryBydoClaw();
-          }
-
-          if(!isExActing && bydoMissileQueed){
-
-            bydoMissileQueed = false;
-            TryBydoMissile();
-          }
-
-          if (isExActing)
-          {
-            anim.SetBool("run",false);
+            SetAnimatorBool("run", false);
             xSpeed = 0f;
-          }
+        }
+        else
+        {
+            xSpeed = ApplyFacingAndRunAnimation(horizontalInput);
+        }
 
-          else if (horizontalKey > 0)
-          {
-              transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
-              anim.SetBool("run", true);
-              xSpeed = speed;
-          }
-          else if (horizontalKey < 0)
-          {
-              transform.localScale = new Vector3(-0.6f, 0.6f, 0.6f);
-              anim.SetBool("run", true);
-              xSpeed = -speed;
-          }
-          else
-          {
-              anim.SetBool("run", false);
-              xSpeed = 0.0f;
-          }
-          if(shotHeld){
-            anim.SetBool("Shot", true);
-          }
-          else{
-            anim.SetBool("Shot", false);
-          }
+        SetAnimatorBool("Shot", !isSpecialActing && shotHeld);
+        DecelerateMeleeStep();
+        xSpeed += currentMeleeStep + currentBydoClawStep;
 
-          if (currentMeleeStep != 0f)
-          {
+        if(body != null)
+        {
+            body.velocity = new Vector2(xSpeed, verticalSpeed);
+        }
+    }
+
+    void CaptureInput()
+    {
+        horizontalInput = IsAimLockHeld() ? 0f : Input.GetAxisRaw("Horizontal");
+        jumpHeld = !isSpecialActing && Input.GetButton("Jump");
+        shotHeld = !isSpecialActing && Input.GetKey(KeyCode.Z);
+
+        if(!isSpecialActing && Input.GetButtonDown("Jump"))
+        {
+            jumpQueued = true;
+        }
+
+        if(!isSpecialActing && Input.GetKeyDown(KeyCode.X))
+        {
+            PlayOneShot(meleeStartSound);
+            meleeQueued = true;
+        }
+
+        if(!isSpecialActing && Input.GetKeyDown(KeyCode.E))
+        {
+            PlayOneShot(chargeSound);
+            bydoClawQueued = true;
+        }
+
+        if(!isSpecialActing && Input.GetKeyDown(KeyCode.Q))
+        {
+            PlayOneShot(chargeSound);
+            bydoMissileQueued = true;
+        }
+    }
+
+    bool IsAimLockHeld()
+    {
+        return Input.GetKey(KeyCode.B) || Input.GetKey(KeyCode.JoystickButton1);
+    }
+
+    void RefreshGroundedState()
+    {
+        isGrounded = groundSensor != null && groundSensor.IsGround();
+    }
+
+    void UpdateJumpVelocity()
+    {
+        if(isGrounded)
+        {
+            if(!isSpecialActing && jumpQueued)
+            {
+                jumpQueued = false;
+                verticalSpeed = jumpSpeed;
+                jumpStartY = transform.position.y;
+                isJumping = true;
+                SetAnimatorBool("jump", true);
+                return;
+            }
+
+            verticalSpeed = 0f;
+            isJumping = false;
+            SetAnimatorBool("jump", false);
+            return;
+        }
+
+        if(isJumping && jumpHeld && jumpStartY + jumpHeight > transform.position.y)
+        {
+            verticalSpeed = jumpSpeed;
+            return;
+        }
+
+        verticalSpeed = -gravity;
+        isJumping = false;
+    }
+
+    void RunQueuedActions()
+    {
+        if(isSpecialActing)
+        {
+            return;
+        }
+
+        if(meleeQueued)
+        {
+            meleeQueued = false;
+            TryMelee();
+        }
+
+        if(bydoClawQueued)
+        {
+            bydoClawQueued = false;
+            TryBydoClaw();
+        }
+
+        if(bydoMissileQueued)
+        {
+            bydoMissileQueued = false;
+            TryBydoMissile();
+        }
+    }
+
+    float ApplyFacingAndRunAnimation(float direction)
+    {
+        if(direction > 0f)
+        {
+            transform.localScale = new Vector3(DefaultFacingScale, DefaultFacingScale, DefaultFacingScale);
+            SetAnimatorBool("run", true);
+            return moveSpeed;
+        }
+
+        if(direction < 0f)
+        {
+            transform.localScale = new Vector3(-DefaultFacingScale, DefaultFacingScale, DefaultFacingScale);
+            SetAnimatorBool("run", true);
+            return -moveSpeed;
+        }
+
+        SetAnimatorBool("run", false);
+        return 0f;
+    }
+
+    void DecelerateMeleeStep()
+    {
+        if(currentMeleeStep != 0f)
+        {
             currentMeleeStep = Mathf.MoveTowards(currentMeleeStep, 0f, meleeStepDeceleration * Time.fixedDeltaTime);
-          }
-          xSpeed += currentMeleeStep + currentBydoClawStep;
-
-          rb.velocity = new Vector2(xSpeed, ySpeed);
-      }
-
-      IEnumerator ClawAnimation(){
-        if(clawC == 0) anim.SetBool("Claw", true);
-        else anim.SetBool("ClawP", true); 
-
-        if (hitDelay > 0f) yield return new WaitForSeconds(hitDelay);
-
-        DoMeleeHit();
-        float rest = Mathf.Max(0f, bydoClawStepCooltime - hitDelay);
-        if (rest > 0f) yield return new WaitForSeconds(rest);
-
-        anim.SetBool("Claw", false); 
-        anim.SetBool("ClawP", false); 
-      }
-
-      IEnumerator BydoClawCombo()
-      {
-        isExActing = true;
-
-        JumpQueed = false;
-        MeleeQueed = false;
-        BydoClawQueed = false;
-        currentMeleeStep = 0f;
-        currentBydoClawStep = 0f;
-
-        anim.SetBool("Shot", false);
-        anim.SetBool("run", false);
-        anim.SetBool("Claw", false);
-        anim.SetBool("ClawP", false);
-        anim.SetBool("EXClaw", true);
-
-        
-        
-
-        if (bydoClawStartTime > 0f)
-        {
-          
-          yield return new WaitForSeconds(bydoClawStartTime);
         }
-
-        for (int i = 0; i < bydoClawCount; i++)
-        {
-          anim.SetInteger("EXClawC",1+i);
-          PlayOneShot(ClawS);
-          yield return StartCoroutine(BydoClawStep());
-
-          if(i < bydoClawCount - 1 && bydoClawInterval > 0f)
-          {
-            yield return new WaitForSeconds(bydoClawInterval);
-            
-          }
-          
-        }
-
-        PlayOneShot(ClawSEnd);
-
-        currentBydoClawStep = 0f;
-        anim.SetBool("EXClaw", false);
-        yield return new WaitForSeconds(bydoClawInterval);
-        anim.SetInteger("EXClawC",0);
-
-        isExActing = false;
-
-      }
-
-      IEnumerator ChargeAnimation(){
-        anim.SetBool("EXClaw", true);
-        yield return new WaitForSeconds(2f);
-
-        }
-
-      IEnumerator BydoClawStep(){
-        float stepSpeed = 0f;
-        if (bydoClawStepCooltime > 0f)
-        {
-          stepSpeed = bydoClawDistance / bydoClawStepCooltime;
-        }
-
-        currentBydoClawStep = stepSpeed;
-        
-        float hitDelayClamped = Mathf.Clamp(bydoClawHitDelay, 0f, bydoClawStepCooltime);
-
-        if (hitDelayClamped > 0f) 
-       {
-
-        yield return new WaitForSeconds(hitDelayClamped);
-
-       }
-        
-        DoBydoClawHit(bydoClawRadius, bydoClawDamage);
-        float rest = Mathf.Max(0f, 0.1f - bydoClawHitDelay);
-        if (rest > 0f) yield return new WaitForSeconds(rest);
-
-        currentBydoClawStep = 0f;
-
-        
-      }
-
-      IEnumerator BydoMissile()
-      {
-        isExActing = true;
-        JumpQueed = false;
-        MeleeQueed = false;
-        BydoClawQueed = false;
-        bydoMissileQueed = false;
-        currentMeleeStep = 0f;
-        currentBydoClawStep = 0f;
-
-        anim.SetBool("Shot", false);
-        anim.SetBool("run", false);
-        anim.SetBool("Claw", false);
-        anim.SetBool("ClawP", false);
-        anim.SetBool("EXClaw", false);
-        anim.SetInteger("EXClawC", 0);
-        SetBydoMissilePose(bydoMissileChargeSprite);
-
-        if (bydoMissileStartTime > 0f)
-        {
-          yield return new WaitForSeconds(bydoMissileStartTime);
-        }
-
-        SetBydoMissilePose(bydoMissileAttackSprite);
-
-        for (int i = 0; i < bydoMissileCount; i++)
-        {
-          SpawnBydoMissile(i);
-          PlayOneShot(misairu);
-
-          if (i < bydoMissileCount - 1 && bydoMissileInterval > 0f)
-          {
-            yield return new WaitForSeconds(bydoMissileInterval);
-          }
-        }
-
-        if (bydoMissileInterval > 0f)
-        {
-          yield return new WaitForSeconds(bydoMissileInterval);
-        }
-
-        ResetAnimatorPose();
-        isExActing = false;
-      }
-      
+    }
 
     void TryMelee()
     {
-        if(Time.time < lastMeleeTime + meleeCooltime) return;
+        if(Time.time < lastMeleeTime + meleeCooltime)
+        {
+            return;
+        }
+
         lastMeleeTime = Time.time;
+        currentMeleeStep = FacingDirection() * meleeStepSpeed;
+        meleeComboIndex = (meleeComboIndex + 1) % 2;
+        StartCoroutine(PlayMeleeAttack());
+    }
 
-        currentMeleeStep = Mathf.Sign(transform.localScale.x) * meleeStepSpeed;
+    IEnumerator PlayMeleeAttack()
+    {
+        SetAnimatorBool(meleeComboIndex == 0 ? "Claw" : "ClawP", true);
 
-        clawC = (clawC + 1) % 2;
-        StartCoroutine(ClawAnimation());
+        if(hitDelay > 0f)
+        {
+            yield return new WaitForSeconds(hitDelay);
+        }
+
+        DoMeleeHit();
+
+        float rest = Mathf.Max(0f, meleeCooltime - hitDelay);
+        if(rest > 0f)
+        {
+            yield return new WaitForSeconds(rest);
+        }
+
+        SetAnimatorBool("Claw", false);
+        SetAnimatorBool("ClawP", false);
     }
 
     void TryBydoClaw()
     {
-        if(isExActing)return;
-        if(Time.time < lastBydoClawTime + bydoClawCooltime) return;
+        if(isSpecialActing || Time.time < lastBydoClawTime + bydoClawCooltime)
+        {
+            return;
+        }
+
         lastBydoClawTime = Time.time;
+        StartCoroutine(RunBydoClawCombo());
+    }
 
-        StartCoroutine(BydoClawCombo());
+    IEnumerator RunBydoClawCombo()
+    {
+        BeginSpecialAction();
+        SetAnimatorBool("EXClaw", true);
 
-
-
-      }
-
-      void TryBydoMissile()
-      {
-        if(isExActing)return;
-        if(Time.time < lastbydoMissileTime + bydoMissileCooltime) return;
-        lastbydoMissileTime = Time.time;
-
-        StartCoroutine(BydoMissile());
-      }
-
-      void SetBydoMissilePose(Sprite poseSprite)
-      {
-        if(sr == null || poseSprite == null) return;
-
-        if(anim != null)
+        if(bydoClawStartTime > 0f)
         {
-          anim.enabled = false;
+            yield return new WaitForSeconds(bydoClawStartTime);
         }
 
-        sr.sprite = poseSprite;
-      }
-
-      void ResetAnimatorPose()
-      {
-        if(anim != null)
+        int attackCount = Mathf.Max(0, bydoClawCount);
+        for(int i = 0; i < attackCount; i++)
         {
-          anim.enabled = true;
+            SetAnimatorInteger("EXClawC", i + 1);
+            PlayOneShot(meleeStartSound);
+            yield return StartCoroutine(RunBydoClawStep());
+
+            if(i < attackCount - 1 && bydoClawInterval > 0f)
+            {
+                yield return new WaitForSeconds(bydoClawInterval);
+            }
         }
-      }
 
-      void SpawnBydoMissile(int missileIndex)
-      {
-        if (bydoMissilePrefab == null) return;
+        PlayOneShot(meleeEndSound);
+        currentBydoClawStep = 0f;
+        SetAnimatorBool("EXClaw", false);
 
-        float dirX = Mathf.Sign(transform.localScale.x);
-        if (dirX == 0f) dirX = 1f;
+        if(bydoClawInterval > 0f)
+        {
+            yield return new WaitForSeconds(bydoClawInterval);
+        }
 
+        SetAnimatorInteger("EXClawC", 0);
+        EndSpecialAction();
+    }
+
+    IEnumerator RunBydoClawStep()
+    {
+        float stepDuration = Mathf.Max(0f, bydoClawStepDuration);
+        currentBydoClawStep = stepDuration > 0f ? FacingDirection() * bydoClawDistance / stepDuration : 0f;
+
+        float clampedHitDelay = Mathf.Clamp(bydoClawHitDelay, 0f, stepDuration);
+        if(clampedHitDelay > 0f)
+        {
+            yield return new WaitForSeconds(clampedHitDelay);
+        }
+
+        DoBydoClawHit();
+
+        float rest = Mathf.Max(0f, stepDuration - clampedHitDelay);
+        if(rest > 0f)
+        {
+            yield return new WaitForSeconds(rest);
+        }
+
+        currentBydoClawStep = 0f;
+    }
+
+    void TryBydoMissile()
+    {
+        if(isSpecialActing || Time.time < lastBydoMissileTime + bydoMissileCooltime)
+        {
+            return;
+        }
+
+        lastBydoMissileTime = Time.time;
+        StartCoroutine(RunBydoMissile());
+    }
+
+    IEnumerator RunBydoMissile()
+    {
+        BeginSpecialAction();
+        SetAnimatorBool("EXClaw", false);
+        SetAnimatorInteger("EXClawC", 0);
+        SetBydoMissilePose(bydoMissileChargeSprite);
+
+        if(bydoMissileStartTime > 0f)
+        {
+            yield return new WaitForSeconds(bydoMissileStartTime);
+        }
+
+        SetBydoMissilePose(bydoMissileAttackSprite);
+
+        int missileCount = Mathf.Max(0, bydoMissileCount);
+        for(int i = 0; i < missileCount; i++)
+        {
+            SpawnBydoMissile(i);
+            PlayOneShot(missileLaunchSound);
+
+            if(i < missileCount - 1 && bydoMissileInterval > 0f)
+            {
+                yield return new WaitForSeconds(bydoMissileInterval);
+            }
+        }
+
+        if(bydoMissileInterval > 0f)
+        {
+            yield return new WaitForSeconds(bydoMissileInterval);
+        }
+
+        ResetAnimatorPose();
+        EndSpecialAction();
+    }
+
+    void BeginSpecialAction()
+    {
+        isSpecialActing = true;
+        jumpQueued = false;
+        meleeQueued = false;
+        bydoClawQueued = false;
+        bydoMissileQueued = false;
+        currentMeleeStep = 0f;
+        currentBydoClawStep = 0f;
+
+        SetAnimatorBool("Shot", false);
+        SetAnimatorBool("run", false);
+        SetAnimatorBool("Claw", false);
+        SetAnimatorBool("ClawP", false);
+    }
+
+    void EndSpecialAction()
+    {
+        isSpecialActing = false;
+    }
+
+    void SetBydoMissilePose(Sprite poseSprite)
+    {
+        if(spriteRenderer == null || poseSprite == null)
+        {
+            return;
+        }
+
+        if(animator != null)
+        {
+            animator.enabled = false;
+        }
+
+        spriteRenderer.sprite = poseSprite;
+    }
+
+    void ResetAnimatorPose()
+    {
+        if(animator != null)
+        {
+            animator.enabled = true;
+        }
+    }
+
+    void SpawnBydoMissile(int missileIndex)
+    {
+        if(bydoMissilePrefab == null)
+        {
+            return;
+        }
+
+        float dirX = FacingDirection();
         Transform shotPoint = transform.Find("ShotPosition");
         Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
-
-        float centeredIndex = missileIndex - ((bydoMissileCount - 1) * 0.5f);
+        float centeredIndex = missileIndex - ((Mathf.Max(1, bydoMissileCount) - 1) * 0.5f);
         Vector3 spawnOffset = new Vector3(-0.35f * dirX, 1.2f + Mathf.Abs(centeredIndex) * 0.35f, 0f);
-        Vector3 spawnPosition = origin + spawnOffset;
-
-        GameObject missileObject = Instantiate(bydoMissilePrefab, spawnPosition, Quaternion.identity);
+        GameObject missileObject = Instantiate(bydoMissilePrefab, origin + spawnOffset, Quaternion.identity);
         PlayerHomingMissile missile = missileObject.GetComponent<PlayerHomingMissile>();
-        if (missile == null)
+
+        if(missile == null)
         {
-          Destroy(missileObject);
-          return;
+            Destroy(missileObject);
+            return;
         }
 
         Vector2 initialDirection = new Vector2(dirX, -0.15f * centeredIndex).normalized;
-        missile.Init(initialDirection, dirX, bydoMissileDamage, enemyLayers, bydoMissileSeekRange, bydoMissileKillShakePower, bydoMissileKillShakeTime);
-      }
+        missile.Init(
+            initialDirection,
+            dirX,
+            bydoMissileDamage,
+            enemyLayers,
+            bydoMissileSeekRange,
+            bydoMissileKillShakePower,
+            bydoMissileKillShakeTime);
+    }
 
-      void DoMeleeHit()
-      {
+    void DoMeleeHit()
+    {
         DamageEnemiesInCircle(meleeRadius, meleeDamage, meleeKillShakePower, meleeKillShakeTime);
-      }
+    }
 
-      void DoBydoClawHit(float hitRadius, int damage)
-      {
-        DamageEnemiesInCircle(hitRadius, damage, bydoClawShakePower, bydoClawShakeTime);
-      }
+    void DoBydoClawHit()
+    {
+        DamageEnemiesInCircle(bydoClawRadius, bydoClawDamage, bydoClawShakePower, bydoClawShakeTime);
+    }
 
-      void DamageEnemiesInCircle(float hitRadius, int damage, float shakePower, float shakeTime)
-      {
-        if (meleePoint == null) return;
-
-        var hits = Physics2D.OverlapCircleAll(meleePoint.position, hitRadius, enemyLayers);
-
-        var damaged = new System.Collections.Generic.HashSet<IDamageable>();
-
-        foreach (var h in hits)
+    void DamageEnemiesInCircle(float hitRadius, int damage, float shakePower, float shakeTime)
+    {
+        if(meleePoint == null)
         {
-            if (h == null) continue;
+            return;
+        }
 
-            IDamageable damageable = h.GetComponentInParent<IDamageable>();
-            if(damageable == null || damaged.Contains(damageable)) continue;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(meleePoint.position, hitRadius, enemyLayers);
+        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
 
-            damaged.Add(damageable);
-            DamageResult result = damageable.TakeDamage(new DamageRequest(damage, gameObject, h.bounds.center, shakePower, shakeTime));
-            if(result.Killed)
+        foreach(Collider2D hit in hits)
+        {
+            if(hit == null)
             {
-              ScreenShake.Shake(shakePower,shakeTime);
+                continue;
             }
-            
-        }
-      }
 
-      void PlayOneShot(AudioClip clip)
-      {
-        if(As != null && clip != null)
+            IDamageable damageable = hit.GetComponentInParent<IDamageable>();
+            if(damageable == null || damagedTargets.Contains(damageable))
+            {
+                continue;
+            }
+
+            damagedTargets.Add(damageable);
+            DamageRequest request = new DamageRequest(damage, gameObject, hit.bounds.center, shakePower, shakeTime);
+            DamageUtility.ApplyDamage(damageable, request, true);
+        }
+    }
+
+    void ApplyBodyMaterial()
+    {
+        if(bodyCollider == null)
         {
-          As.PlayOneShot(clip,0.5f);
+            return;
         }
-      }
- }
 
+        runtimeBodyMaterial = new PhysicsMaterial2D("PlayerNoFriction")
+        {
+            friction = colliderFriction,
+            bounciness = colliderBounciness
+        };
+        bodyCollider.sharedMaterial = runtimeBodyMaterial;
+    }
+
+    void NotifyHpChanged()
+    {
+        if(OnHpChanged != null)
+        {
+            OnHpChanged(currentHP, maxHP);
+        }
+    }
+
+    float FacingDirection()
+    {
+        float direction = Mathf.Sign(transform.localScale.x);
+        return direction == 0f ? 1f : direction;
+    }
+
+    void SetAnimatorBool(string key, bool value)
+    {
+        if(animator != null)
+        {
+            animator.SetBool(key, value);
+        }
+    }
+
+    void SetAnimatorInteger(string key, int value)
+    {
+        if(animator != null)
+        {
+            animator.SetInteger(key, value);
+        }
+    }
+
+    void PlayOneShot(AudioClip clip)
+    {
+        if(audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip, 0.5f);
+        }
+    }
+}

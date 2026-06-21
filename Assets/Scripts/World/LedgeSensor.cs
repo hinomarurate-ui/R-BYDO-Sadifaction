@@ -3,40 +3,40 @@ using UnityEngine;
 
 public class LedgeSensor : MonoBehaviour
 {
-    const string GakeTag = "Gake";
+    const string LedgeTag = "Gake";
 
-    readonly HashSet<Collider2D> touchGake = new HashSet<Collider2D>();
+    readonly HashSet<Collider2D> ledgeContacts = new HashSet<Collider2D>();
 
-    public bool IsGake()
+    public bool IsAtLedge()
     {
-        touchGake.RemoveWhere(collision => collision == null || !collision.enabled);
-        return touchGake.Count > 0;
+        ledgeContacts.RemoveWhere(collision => collision == null || !collision.enabled);
+        return ledgeContacts.Count > 0;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(IsGakeCollider(collision))
+        if(IsLedgeCollider(collision))
         {
-            touchGake.Add(collision);
+            ledgeContacts.Add(collision);
         }
     }
 
     void OnTriggerStay2D(Collider2D collision)
     {
-        if(IsGakeCollider(collision))
+        if(IsLedgeCollider(collision))
         {
-            touchGake.Add(collision);
+            ledgeContacts.Add(collision);
         }
     }
 
     void OnTriggerExit2D(Collider2D collision)
     {
-        touchGake.Remove(collision);
+        ledgeContacts.Remove(collision);
     }
 
-    bool IsGakeCollider(Collider2D collision)
+    bool IsLedgeCollider(Collider2D collision)
     {
-        return collision != null && collision.CompareTag(GakeTag);
+        return collision != null && collision.CompareTag(LedgeTag);
     }
 }
 

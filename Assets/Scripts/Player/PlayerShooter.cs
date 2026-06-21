@@ -1,106 +1,98 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerShooter : MonoBehaviour
 {
     [SerializeField]
-    Transform ShotPoint;
-    [SerializeField]
-    GameObject BydoShot;
-    [SerializeField]
-    float BulletSpeed;
-    [SerializeField]
-    float ShotCooltime;
-    [SerializeField]
-    float AimDeadzone = 0.2f;
-    AudioSource As;
-    [SerializeField] AudioClip ShotS;
+    [FormerlySerializedAs("ShotPoint")]
+    Transform shotPoint;
 
-    float LastShotTime = 0f;
-    Transform PlayerTransform;
+    [SerializeField]
+    [FormerlySerializedAs("BydoShot")]
+    GameObject bulletPrefab;
 
-    void Start()
+    [SerializeField]
+    [FormerlySerializedAs("BulletSpeed")]
+    float bulletSpeed = 12f;
+
+    [SerializeField]
+    [FormerlySerializedAs("ShotCooltime")]
+    float shotCooldown = 0.1f;
+
+    [SerializeField]
+    [FormerlySerializedAs("AimDeadzone")]
+    float aimDeadzone = 0.2f;
+
+    [SerializeField]
+    [FormerlySerializedAs("ShotS")]
+    AudioClip shotSound;
+
+    AudioSource audioSource;
+    Transform ownerTransform;
+    float nextShotTime;
+
+    void Awake()
     {
-        PlayerTransform = transform;
-        As = GetComponent<AudioSource>();
+        ownerTransform = transform;
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
     {
         if(Input.GetKey(KeyCode.Z))
         {
-            Shoot();
+            TryShoot();
         }
     }
 
-    void Shoot()
+    void TryShoot()
     {
-        if(Time.time < LastShotTime + ShotCooltime)
+        if(Time.time < nextShotTime || bulletPrefab == null || shotPoint == null)
         {
             return;
         }
 
-        if(BydoShot == null || ShotPoint == null)
-        {
-            return;
-        }
-
+        nextShotTime = Time.time + shotCooldown;
         PlayShotSound();
-        LastShotTime = Time.time;
-        GameObject bulletObject = Instantiate(BydoShot,ShotPoint.position,Quaternion.identity);
-        Vector2 ShotDir = getShotDirection();
+
+        GameObject bulletObject = Instantiate(bulletPrefab, shotPoint.position, Quaternion.identity);
         PlayerBullet bullet = bulletObject.GetComponent<PlayerBullet>();
         if(bullet != null)
         {
-            bullet.Init(ShotDir,BulletSpeed);
+            bullet.Init(GetShotDirection(), bulletSpeed);
         }
     }
 
-    Vector2 getShotDirection()
+    Vector2 GetShotDirection()
     {
-        float faceDir = Mathf.Sign(PlayerTransform.localScale.x);
-        if(faceDir == 0f)
-        {
-            faceDir = 1f;
-        }
+        float inputX = NormalizeAxis(Input.GetAxisRaw("Horizontal"));
+        float inputY = NormalizeAxis(Input.GetAxisRaw("Vertical"));
+        Vector2 inputDirection = new Vector2(inputX, inputY);
 
-        float inputX = Input.GetAxisRaw("Horizontal");
-        float inputY = Input.GetAxisRaw("Vertical");
-
-        if(Mathf.Abs(inputX) <= AimDeadzone)
-        {
-            inputX = 0f;
-        }
-        else
-        {
-            inputX = Mathf.Sign(inputX);
-        }
-
-        if(Mathf.Abs(inputY) <= AimDeadzone)
-        {
-            inputY = 0f;
-        }
-        else
-        {
-            inputY = Mathf.Sign(inputY);
-        }
-
-        Vector2 inputDirection = new Vector2(inputX,inputY);
         if(inputDirection.sqrMagnitude > 0f)
         {
             return inputDirection.normalized;
         }
 
-        return new Vector2(faceDir,0f);
+        return new Vector2(FacingDirection(), 0f);
+    }
+
+    float NormalizeAxis(float axis)
+    {
+        return Mathf.Abs(axis) <= aimDeadzone ? 0f : Mathf.Sign(axis);
+    }
+
+    float FacingDirection()
+    {
+        float direction = Mathf.Sign(ownerTransform.localScale.x);
+        return direction == 0f ? 1f : direction;
     }
 
     void PlayShotSound()
     {
-        if(As != null && ShotS != null)
+        if(audioSource != null && shotSound != null)
         {
-            As.PlayOneShot(ShotS,0.5f);
+            audioSource.PlayOneShot(shotSound, 0.5f);
         }
     }
 }
-

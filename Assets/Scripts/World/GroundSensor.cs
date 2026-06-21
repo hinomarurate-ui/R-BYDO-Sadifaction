@@ -6,7 +6,7 @@ public class GroundSensor : MonoBehaviour
     const string GroundTag = "Ground";
     const float GroundTolerance = 0.05f;
 
-    readonly HashSet<Collider2D> touchGround = new HashSet<Collider2D>();
+    readonly HashSet<Collider2D> groundContacts = new HashSet<Collider2D>();
 
     Collider2D ownCollider;
 
@@ -22,9 +22,9 @@ public class GroundSensor : MonoBehaviour
             return false;
         }
 
-        touchGround.RemoveWhere(collision => collision == null || !collision.enabled);
+        groundContacts.RemoveWhere(collision => collision == null || !collision.enabled);
 
-        foreach(Collider2D collision in touchGround)
+        foreach(Collider2D collision in groundContacts)
         {
             if(IsGroundSurface(collision))
             {
@@ -49,17 +49,17 @@ public class GroundSensor : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        touchGround.Add(collision);
+        groundContacts.Add(collision);
     }
 
     void OnTriggerStay2D(Collider2D collision)
     {
-        touchGround.Add(collision);
+        groundContacts.Add(collision);
     }
 
     void OnTriggerExit2D(Collider2D collision)
     {
-        touchGround.Remove(collision);
+        groundContacts.Remove(collision);
     }
 }
 

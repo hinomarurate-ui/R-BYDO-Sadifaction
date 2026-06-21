@@ -3,18 +3,18 @@
 public class EnemySensor
 {
     GroundSensor ground;
-    LedgeSensor gake;
+    LedgeSensor ledge;
 
     public bool IsGrounded { get; private set; }
     public bool IsAtLedge { get; private set; }
 
-    public void Initialize(Transform root, GroundSensor groundOverride, LedgeSensor gakeOverride)
+    public void Initialize(Transform root, GroundSensor groundOverride, LedgeSensor ledgeOverride)
     {
         ground = groundOverride != null ? groundOverride : FindChildComponent<GroundSensor>(root, "GroundChecker");
-        gake = gakeOverride != null ? gakeOverride : FindChildComponent<LedgeSensor>(root, "LedgeSensor");
-        if(gake == null)
+        ledge = ledgeOverride != null ? ledgeOverride : FindChildComponent<LedgeSensor>(root, "LedgeSensor");
+        if(ledge == null)
         {
-            gake = FindChildComponent<LedgeSensor>(root, "GakeChecker");
+            ledge = FindChildComponent<LedgeSensor>(root, "GakeChecker");
         }
         Refresh();
     }
@@ -22,7 +22,7 @@ public class EnemySensor
     public void Refresh()
     {
         IsGrounded = ground != null && ground.IsGround();
-        IsAtLedge = gake != null && gake.IsGake();
+        IsAtLedge = ledge != null && ledge.IsAtLedge();
     }
 
     static T FindChildComponent<T>(Transform root, string childName) where T : Component

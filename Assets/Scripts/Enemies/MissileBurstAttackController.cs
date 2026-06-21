@@ -1,26 +1,31 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPattern
 {
     [SerializeField] bool useDefinitionSettings = true;
-
     [SerializeField] GameObject bulletPrefab;
     [SerializeField] Transform shotPoint;
     [SerializeField] float searchRange = 8f;
-    [SerializeField] float attackCooltime = 2f;
-    [SerializeField] float shotChargetime = 0.35f;
+    [FormerlySerializedAs("attackCooltime")]
+    [SerializeField] float attackCooldown = 2f;
+    [FormerlySerializedAs("shotChargetime")]
+    [SerializeField] float shotChargeTime = 0.35f;
     [SerializeField] float attackEndTime = 0.25f;
     [SerializeField] float bulletSpeed = 6f;
     [SerializeField] float bulletLifeTime = 3f;
     [SerializeField] int bulletCount = 1;
-    [SerializeField] float bulletAngleSpace = 12f;
+    [FormerlySerializedAs("bulletAngleSpace")]
+    [SerializeField] float bulletAngleSpacing = 12f;
     [SerializeField] float bulletInterval = 0.1f;
     [SerializeField] int bulletDamage = 15;
     [SerializeField] float aimHeight = 0.5f;
 
-    [SerializeField] AudioClip Mis;
-    [SerializeField] AudioSource As;
+    [FormerlySerializedAs("Mis")]
+    [SerializeField] AudioClip shotSound;
+    [FormerlySerializedAs("As")]
+    [SerializeField] AudioSource audioSource;
 
     Transform player;
     float nextAttackTime;
@@ -32,9 +37,9 @@ public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPatt
         base.Initialize(controller);
         player = controller != null ? controller.Target : null;
 
-        if(As == null)
+        if(audioSource == null)
         {
-            As = GetComponent<AudioSource>();
+            audioSource = GetComponent<AudioSource>();
         }
 
         if(useDefinitionSettings)
@@ -58,39 +63,19 @@ public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPatt
         nextAttackTime = float.PositiveInfinity;
         Stop();
 
-        if(shotChargetime > 0f)
-        {
-            yield return new WaitForSeconds(shotChargetime);
-        }
-
-        if(enemy != null && enemy.Animation != null)
-        {
-            enemy.Animation.SetShot(true);
-        }
-
+        yield return WaitIfPositive(shotChargeTime);
+        SetShotAnimation(true);
         yield return StartCoroutine(ShotBurst());
+        yield return WaitIfPositive(attackEndTime);
+        SetShotAnimation(false);
 
-        if(attackEndTime > 0f)
-        {
-            yield return new WaitForSeconds(attackEndTime);
-        }
-
-        if(enemy != null && enemy.Animation != null)
-        {
-            enemy.Animation.SetShot(false);
-        }
-
-        nextAttackTime = Time.time + attackCooltime;
+        nextAttackTime = Time.time + attackCooldown;
     }
 
     public void Cancel()
     {
-        if(enemy != null && enemy.Animation != null)
-        {
-            enemy.Animation.SetShot(false);
-        }
-
-        nextAttackTime = Time.time + attackCooltime;
+        SetShotAnimation(false);
+        nextAttackTime = Time.time + attackCooldown;
     }
 
     IEnumerator ShotBurst()
@@ -102,48 +87,66 @@ public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPatt
 
         Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
         Vector2 baseDirection = (player.position + Vector3.up * aimHeight - origin).normalized;
+        int shots = Mathf.Max(0, bulletCount);
 
-        for(int i = 0; i < bulletCount; i++)
+        for(int i = 0; i < shots; i++)
         {
-            float center = (bulletCount - 1) * 0.5f;
-            float angle = (i - center) * bulletAngleSpace;
+            float center = (shots - 1) * 0.5f;
+            float angle = (i - center) * bulletAngleSpacing;
             Vector2 direction = (Vector2)(Quaternion.Euler(0f, 0f, angle) * baseDirection);
 
             MissileBurstAttackPattern.Spawn(bulletPrefab, origin, direction, bulletSpeed, bulletLifeTime, bulletDamage);
             PlayShotSound();
 
-            if(i < bulletCount - 1 && bulletInterval > 0f)
+            if(i < shots - 1)
             {
-                yield return new WaitForSeconds(bulletInterval);
+                yield return WaitIfPositive(bulletInterval);
             }
         }
     }
 
     void ApplyDefinition(EnemyDefinition definition)
     {
-        if(definition == null) return;
+        if(definition == null || definition.Attack == null)
+        {
+            return;
+        }
 
         EnemyDefinition.AttackSettings settings = definition.Attack;
-        if(settings == null) return;
-
         searchRange = settings.searchRange;
-        attackCooltime = settings.attackCooltime;
-        shotChargetime = settings.chargeTime;
+        attackCooldown = settings.attackCooldown;
+        shotChargeTime = settings.chargeTime;
         attackEndTime = settings.endTime;
         bulletSpeed = settings.bulletSpeed;
         bulletLifeTime = settings.bulletLifeTime;
         bulletCount = settings.bulletCount;
-        bulletAngleSpace = settings.bulletAngleSpace;
+        bulletAngleSpacing = settings.bulletAngleSpacing;
         bulletInterval = settings.bulletInterval;
         bulletDamage = settings.bulletDamage;
         aimHeight = settings.aimHeight;
     }
 
+    void SetShotAnimation(bool enabled)
+    {
+        if(enemy != null && enemy.Animation != null)
+        {
+            enemy.Animation.SetShot(enabled);
+        }
+    }
+
     void PlayShotSound()
     {
-        if(As != null && Mis != null)
+        if(audioSource != null && shotSound != null)
         {
-            As.PlayOneShot(Mis, 1.25f);
+            audioSource.PlayOneShot(shotSound, 1.25f);
+        }
+    }
+
+    static IEnumerator WaitIfPositive(float duration)
+    {
+        if(duration > 0f)
+        {
+            yield return new WaitForSeconds(duration);
         }
     }
 }

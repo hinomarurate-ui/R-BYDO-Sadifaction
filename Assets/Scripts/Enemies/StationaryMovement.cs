@@ -3,12 +3,12 @@
 public class StationaryMovement : MonoBehaviour, IEnemyMovement
 {
     protected EnemyController enemy;
-    protected Rigidbody2D rb;
+    protected Rigidbody2D body;
 
     public virtual void Initialize(EnemyController controller)
     {
         enemy = controller;
-        rb = GetComponent<Rigidbody2D>();
+        body = GetComponent<Rigidbody2D>();
     }
 
     public virtual bool Tick()
@@ -24,9 +24,9 @@ public class StationaryMovement : MonoBehaviour, IEnemyMovement
 
     public virtual void Stop()
     {
-        if(rb != null)
+        if(body != null)
         {
-            rb.velocity = new Vector2(0f, rb.velocity.y);
+            body.velocity = new Vector2(0f, body.velocity.y);
         }
     }
 }

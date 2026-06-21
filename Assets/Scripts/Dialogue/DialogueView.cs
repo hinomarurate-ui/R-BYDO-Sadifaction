@@ -1,116 +1,142 @@
-﻿using System.Collections;
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class DialogueView : MonoBehaviour
 {
     [SerializeField] GameObject panelRoot;
-    [SerializeField] TMP_Text Name;
-    [SerializeField] TMP_Text Talk;
-    [SerializeField] GameObject continueObj;
+    [FormerlySerializedAs("Name")]
+    [SerializeField] TMP_Text speakerNameText;
+    [FormerlySerializedAs("Talk")]
+    [SerializeField] TMP_Text bodyText;
+    [FormerlySerializedAs("continueObj")]
+    [SerializeField] GameObject continueIndicator;
+    [FormerlySerializedAs("charsPerSec")]
+    [SerializeField] float charsPerSecond = 40f;
 
-    [SerializeField] float charsPerSec = 40f;
+    Coroutine typingRoutine;
 
-    Coroutine co;
-    public bool isOpen;
-    public bool isTyping;
- 
+    public bool IsOpen { get; private set; }
+    public bool IsTyping { get; private set; }
+
     void Awake()
     {
         Close();
-        
     }
 
     public void Open()
     {
-        isOpen = true;
-        if(panelRoot != null) panelRoot.SetActive(true);
+        IsOpen = true;
+        if(panelRoot != null)
+        {
+            panelRoot.SetActive(true);
+        }
     }
 
     public void Close()
     {
-        isOpen = false;
-        if(co != null) StopCoroutine(co);
-        co = null;
+        IsOpen = false;
+        StopTypingRoutine();
 
-        if(panelRoot != null) panelRoot.SetActive(false);
-        if(Name != null) Name.text = "";
-        if(Talk != null) Talk.text = "";
-        if(continueObj != null) continueObj.SetActive(false);
+        if(panelRoot != null)
+        {
+            panelRoot.SetActive(false);
+        }
 
-        isTyping = false;
-        
+        SetText(speakerNameText, "");
+        SetText(bodyText, "");
+        SetContinueVisible(false);
+        IsTyping = false;
     }
 
-    public void Setline(string name,string talk)
+    public void SetLine(string speakerName, string body)
     {
-        if(Name != null) Name.text = name;
-        if(Talk == null)
+        SetText(speakerNameText, speakerName);
+        if(bodyText == null)
         {
-            isTyping = false;
+            IsTyping = false;
             return;
         }
 
-        Talk.text = talk;
-        Talk.maxVisibleCharacters = 0;
-        Talk.ForceMeshUpdate();
+        bodyText.text = body;
+        bodyText.maxVisibleCharacters = 0;
+        bodyText.ForceMeshUpdate();
 
-        if (co != null) StopCoroutine(co);
-        co = StartCoroutine(TypeByUnscaledTime());
-
+        StopTypingRoutine();
+        typingRoutine = StartCoroutine(TypeByUnscaledTime());
     }
+
     public void SkipTyping()
     {
-        if(!isTyping) return;
+        if(!IsTyping || bodyText == null)
+        {
+            return;
+        }
 
-        if(co != null) StopCoroutine(co);
-        co = null;
-
-        Talk.ForceMeshUpdate();
-        Talk.maxVisibleCharacters = Talk.textInfo.characterCount;
-
-        isTyping = false;
-        if (continueObj) continueObj.SetActive(true);
-
+        StopTypingRoutine();
+        bodyText.ForceMeshUpdate();
+        bodyText.maxVisibleCharacters = bodyText.textInfo.characterCount;
+        IsTyping = false;
+        SetContinueVisible(true);
     }
 
-    IEnumerator TypeByUnscaledTime ()
+    IEnumerator TypeByUnscaledTime()
     {
-        isTyping = true;
-        if (continueObj)continueObj.SetActive(false);
+        IsTyping = true;
+        SetContinueVisible(false);
 
-        if(Talk == null)
+        if(bodyText == null)
         {
-            isTyping = false;
+            IsTyping = false;
             yield break;
         }
 
-        Talk.ForceMeshUpdate();
-        int total = Talk.textInfo.characterCount;
+        bodyText.ForceMeshUpdate();
+        int totalCharacters = bodyText.textInfo.characterCount;
+        float visibleCharacters = 0f;
+        int shownCharacters = 0;
 
-        float t = 0f;
-        int shown = 0;
-
-        while(shown < total)
+        while(shownCharacters < totalCharacters)
         {
-            t += Time.unscaledDeltaTime * charsPerSec;
-            int nextShown = Mathf.Clamp(Mathf.FloorToInt(t),0,total);
-            
-            if(nextShown != shown)
+            visibleCharacters += Time.unscaledDeltaTime * charsPerSecond;
+            int nextShown = Mathf.Clamp(Mathf.FloorToInt(visibleCharacters), 0, totalCharacters);
+            if(nextShown != shownCharacters)
             {
-                shown = nextShown;
-                Talk.maxVisibleCharacters = shown;
+                shownCharacters = nextShown;
+                bodyText.maxVisibleCharacters = shownCharacters;
             }
 
             yield return null;
         }
-        isTyping = false;
-         if(continueObj) continueObj.SetActive(true);
 
+        IsTyping = false;
+        SetContinueVisible(true);
+        typingRoutine = null;
     }
 
-    
+    void StopTypingRoutine()
+    {
+        if(typingRoutine != null)
+        {
+            StopCoroutine(typingRoutine);
+            typingRoutine = null;
+        }
+    }
 
+    void SetContinueVisible(bool visible)
+    {
+        if(continueIndicator != null)
+        {
+            continueIndicator.SetActive(visible);
+        }
+    }
 
+    static void SetText(TMP_Text target, string value)
+    {
+        if(target != null)
+        {
+            target.text = value;
+        }
+    }
 }
-

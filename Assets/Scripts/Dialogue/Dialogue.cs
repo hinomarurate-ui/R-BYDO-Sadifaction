@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+using System;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(menuName = "Dialogue/Dialogue Sequence")]
 public class Dialogue : ScriptableObject
@@ -6,10 +8,12 @@ public class Dialogue : ScriptableObject
     public DialogueLine[] lines;
 }
 
-[System.Serializable]
-
+[Serializable]
 public class DialogueLine
 {
-    public string name;
-    [TextArea(2,5)] public string text;
+    [FormerlySerializedAs("name")]
+    public string speakerName;
+    [FormerlySerializedAs("text")]
+    [TextArea(2, 5)]
+    public string body;
 }

@@ -1,29 +1,47 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 public class ScoreManager : MonoBehaviour
 {
-    [SerializeField] int Score;
-    [SerializeField] TextMeshProUGUI ScoreText;
-    [SerializeField] int ViewScore;
+    [FormerlySerializedAs("Score")]
+    [SerializeField] int score;
+    [FormerlySerializedAs("ScoreText")]
+    [SerializeField] TextMeshProUGUI scoreText;
+    [FormerlySerializedAs("ViewScore")]
+    [SerializeField] int displayedScore;
+    [SerializeField] int displayStepPerFrame = 1;
+
+    void Awake()
+    {
+        RefreshScoreText();
+    }
 
     void Update()
     {
-        if(ViewScore < Score)
+        if(displayedScore != score)
         {
-            ViewScore += 1;
-        }
-
-        if(ScoreText != null)
-        {
-            ScoreText.text = ViewScore.ToString("00000000");
+            int step = Mathf.Max(1, displayStepPerFrame);
+            displayedScore = Mathf.RoundToInt(Mathf.MoveTowards(displayedScore, score, step));
+            RefreshScoreText();
         }
     }
 
-    public void AddScore(int plusScore)
+    public void AddScore(int amount)
     {
+        if(amount <= 0)
+        {
+            return;
+        }
+
+        score = Mathf.Max(0, score + amount);
+    }
+
+    void RefreshScoreText()
+    {
+        if(scoreText != null)
+        {
+            scoreText.text = displayedScore.ToString("00000000");
+        }
     }
 }

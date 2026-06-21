@@ -1,29 +1,28 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 
 public class StageTimer : MonoBehaviour
 {
-    private float sec;
-    private float min;
     [SerializeField] TextMeshProUGUI dateTimeText;
+
+    float elapsedSeconds;
 
     void Update()
     {
-        sec += Time.deltaTime;
-        if(sec >= 60f)
+        elapsedSeconds += Time.deltaTime;
+        RefreshText();
+    }
+
+    void RefreshText()
+    {
+        if(dateTimeText == null)
         {
-
-            sec -= 60f;
-
-            min++;
+            return;
         }
 
-        if(dateTimeText != null)
-        {
-            dateTimeText.text = min.ToString("00") + ":" + ((int)sec).ToString("00");
-        }
+        int totalSeconds = Mathf.FloorToInt(elapsedSeconds);
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        dateTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
 }

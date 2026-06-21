@@ -28,7 +28,7 @@ public static class FanShotAttackPattern
         Vector3 origin,
         Vector2 baseDirection,
         int bulletCount,
-        float bulletAngleSpace,
+        float bulletAngleSpacing,
         float bulletSpeed,
         float bulletLifeTime,
         int damage)
@@ -41,7 +41,7 @@ public static class FanShotAttackPattern
         for(int i = 0; i < bulletCount; i++)
         {
             float center = (bulletCount - 1) * 0.5f;
-            float angle = (i - center) * bulletAngleSpace;
+            float angle = (i - center) * bulletAngleSpacing;
             Vector2 direction = (Vector2)(Quaternion.Euler(0f, 0f, angle) * baseDirection.normalized);
 
             GameObject bullet = Object.Instantiate(bulletPrefab, origin, Quaternion.identity);

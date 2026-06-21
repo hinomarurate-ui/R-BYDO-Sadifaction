@@ -1,19 +1,27 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class EnemyController : MonoBehaviour
 {
     [SerializeField] EnemyDefinition definition;
+    [FormerlySerializedAs("ground")]
+    [SerializeField] GroundSensor groundSensor;
+    [FormerlySerializedAs("gake")]
+    [SerializeField] LedgeSensor ledgeSensor;
+    [FormerlySerializedAs("Status")]
+    [SerializeField] EnemyDefinition fallbackDefinition;
+    [FormerlySerializedAs("HP")]
+    [SerializeField] EnemyHealth health;
+    [FormerlySerializedAs("Move")]
+    [SerializeField] MonoBehaviour movementOverride;
 
-    [SerializeField] protected GroundSensor ground;
-    [SerializeField] protected LedgeSensor gake;
-    [SerializeField] protected EnemyDefinition Status;
-    [SerializeField] protected EnemyHealth HP;
-    [SerializeField] protected MonoBehaviour Move;
-
-    public bool isGround = false;
-    public bool isGake = false;
+    [Header("Debug")]
+    [FormerlySerializedAs("isGround")]
+    [SerializeField] bool isGroundedDebug;
+    [FormerlySerializedAs("isGake")]
+    [SerializeField] bool isAtLedgeDebug;
 
     readonly EnemySensor sensor = new EnemySensor();
     readonly List<IEnemyAttackPattern> attackPatterns = new List<IEnemyAttackPattern>();
@@ -42,26 +50,6 @@ public class EnemyController : MonoBehaviour
     protected virtual void OnEnable()
     {
         InitializeRuntime();
-    }
-
-    void InitializeRuntime()
-    {
-        if(initialized)
-        {
-            return;
-        }
-
-        initialized = true;
-        Definition = definition != null ? definition : Status;
-        sensor.Initialize(transform, ground, gake);
-        animationDriver = new EnemyAnimationDriver(GetComponent<Animator>(), Definition);
-
-        ResolveTarget();
-        ResolveHealth();
-        ResolveMovement();
-        ResolveAttackPatterns();
-        ResolveRoutines();
-        RefreshSensorState();
     }
 
     protected virtual void Update()
@@ -110,7 +98,10 @@ public class EnemyController : MonoBehaviour
         }
 
         State = nextState;
-        animationDriver.ApplyState(State);
+        if(animationDriver != null)
+        {
+            animationDriver.ApplyState(State);
+        }
     }
 
     public void NotifyDamaged(bool killed)
@@ -126,7 +117,10 @@ public class EnemyController : MonoBehaviour
 
     public void EnterDead()
     {
-        if(State == EnemyState.Dead) return;
+        if(State == EnemyState.Dead)
+        {
+            return;
+        }
 
         CancelAttack();
         StopMovement();
@@ -140,6 +134,26 @@ public class EnemyController : MonoBehaviour
         ChangeState(EnemyState.Idle);
     }
 
+    void InitializeRuntime()
+    {
+        if(initialized)
+        {
+            return;
+        }
+
+        initialized = true;
+        Definition = definition != null ? definition : fallbackDefinition;
+        sensor.Initialize(transform, groundSensor, ledgeSensor);
+        animationDriver = new EnemyAnimationDriver(GetComponent<Animator>(), Definition);
+
+        ResolveTarget();
+        ResolveHealth();
+        ResolveMovement();
+        ResolveAttackPatterns();
+        ResolveRoutines();
+        RefreshSensorState();
+    }
+
     void ResolveTarget()
     {
         GameObject playerObject = GameObject.FindWithTag("Player");
@@ -148,36 +162,23 @@ public class EnemyController : MonoBehaviour
 
     void ResolveHealth()
     {
-        if(HP == null)
+        if(health == null)
         {
-            HP = GetComponent<EnemyHealth>();
+            health = GetComponent<EnemyHealth>();
         }
 
-        if(HP != null)
+        if(health != null)
         {
-            HP.Initialize(this);
+            health.Initialize(this);
         }
     }
 
     void ResolveMovement()
     {
-        if(Move != null && Move is IEnemyMovement)
+        movement = movementOverride as IEnemyMovement;
+        if(movement == null)
         {
-            movement = (IEnemyMovement)Move;
-        }
-        else
-        {
-            foreach(MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
-            {
-                if(behaviour == this) continue;
-
-                IEnemyMovement candidate = behaviour as IEnemyMovement;
-                if(candidate != null)
-                {
-                    movement = candidate;
-                    break;
-                }
-            }
+            movement = FindBehaviour<IEnemyMovement>();
         }
 
         if(movement != null)
@@ -192,11 +193,11 @@ public class EnemyController : MonoBehaviour
 
         foreach(MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
         {
-            IEnemyAttackPattern attackPattern = behaviour as IEnemyAttackPattern;
-            if(attackPattern == null) continue;
-
-            attackPattern.Initialize(this);
-            attackPatterns.Add(attackPattern);
+            if(behaviour is IEnemyAttackPattern attackPattern)
+            {
+                attackPattern.Initialize(this);
+                attackPatterns.Add(attackPattern);
+            }
         }
     }
 
@@ -206,19 +207,37 @@ public class EnemyController : MonoBehaviour
 
         foreach(MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
         {
-            IEnemyRoutine routine = behaviour as IEnemyRoutine;
-            if(routine == null) continue;
-
-            routine.Initialize(this);
-            routines.Add(routine);
+            if(behaviour is IEnemyRoutine routine)
+            {
+                routine.Initialize(this);
+                routines.Add(routine);
+            }
         }
+    }
+
+    T FindBehaviour<T>() where T : class
+    {
+        foreach(MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
+        {
+            if(behaviour == this)
+            {
+                continue;
+            }
+
+            if(behaviour is T candidate)
+            {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 
     void RefreshSensorState()
     {
         sensor.Refresh();
-        isGround = sensor.IsGrounded;
-        isGake = sensor.IsAtLedge;
+        isGroundedDebug = sensor.IsGrounded;
+        isAtLedgeDebug = sensor.IsAtLedge;
     }
 
     void TickRoutines()
@@ -239,11 +258,13 @@ public class EnemyController : MonoBehaviour
     {
         for(int i = 0; i < attackPatterns.Count; i++)
         {
-            if(attackPatterns[i].CanAttack())
+            if(!attackPatterns[i].CanAttack())
             {
-                runningAttack = StartCoroutine(RunAttack(attackPatterns[i]));
-                return true;
+                continue;
             }
+
+            runningAttack = StartCoroutine(RunAttack(attackPatterns[i]));
+            return true;
         }
 
         return false;
@@ -268,7 +289,10 @@ public class EnemyController : MonoBehaviour
 
     void EnterHitStun()
     {
-        if(State == EnemyState.Dead) return;
+        if(State == EnemyState.Dead)
+        {
+            return;
+        }
 
         StopMovement();
 
@@ -320,4 +344,3 @@ public class EnemyController : MonoBehaviour
         }
     }
 }
-

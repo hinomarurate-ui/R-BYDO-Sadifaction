@@ -1,72 +1,74 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class EnemyHomingMissile : MonoBehaviour
 {
     [SerializeField] int damage = 10;
-    [SerializeField] float upSpeed = 2f; 
-    [SerializeField] float upTime = 0.2f;
+    [FormerlySerializedAs("upSpeed")]
+    [SerializeField] float riseSpeed = 2f;
+    [FormerlySerializedAs("upTime")]
+    [SerializeField] float riseTime = 0.2f;
     [SerializeField] float turnSpeed = 180f;
     [SerializeField] float homingTime = 1.2f;
     [SerializeField] float straightTime = 0.1f;
-    Rigidbody2D rb;
+
+    Rigidbody2D body;
     Transform player;
-    Vector2 moveDir;
-    float shotSpeed;
+    Vector2 moveDirection = Vector2.right;
+    float moveSpeed;
     float homingEndTime;
     bool isHoming;
-    
+
+    public void Init(Vector2 direction, float speedValue, float lifeTimeValue, int damageValue)
+    {
+        body = GetComponent<Rigidbody2D>();
+        damage = damageValue;
+        moveSpeed = speedValue;
+        moveDirection = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.right;
+        player = FindPlayer();
+
+        Destroy(gameObject, lifeTimeValue);
+        if(body != null)
+        {
+            StartCoroutine(RiseThenLaunch(moveDirection));
+        }
+    }
+
     void Update()
     {
         RotateToVelocity();
 
         if(isHoming)
         {
-            HomingMove();
+            UpdateHomingMove();
         }
     }
 
-    public void Init(Vector2 dir, float speedValue, float lifeTimeValue, int damageValue)
+    IEnumerator RiseThenLaunch(Vector2 launchDirection)
     {
-        rb = GetComponent<Rigidbody2D>();
-        damage = damageValue;
-        shotSpeed = speedValue;
-        moveDir = dir.sqrMagnitude > 0f ? dir.normalized : Vector2.right;
-        GameObject playerObject = GameObject.FindWithTag("Player");
-        if(playerObject != null)
+        body.velocity = Vector2.one * riseSpeed;
+
+        if(riseTime > 0f)
         {
-            player = playerObject.transform;
+            yield return new WaitForSeconds(riseTime);
         }
 
-        Destroy(gameObject, lifeTimeValue);
-        if(rb == null) return;
+        moveDirection = -launchDirection.normalized;
+        body.velocity = moveDirection * moveSpeed;
 
-        StartCoroutine(MoveUpThenShot(moveDir, speedValue));
-    }
+        if(straightTime > 0f)
+        {
+            yield return new WaitForSeconds(straightTime);
+        }
 
-    IEnumerator MoveUpThenShot(Vector2 dir, float speedValue)
-    {
-        if(rb == null) yield break;
-
-        rb.velocity = new Vector2(1,1) * upSpeed;
-        yield return new WaitForSeconds(upTime);
-        moveDir = -dir.normalized;
-        rb.velocity = moveDir * speedValue;
-        yield return new WaitForSeconds(straightTime);
         homingEndTime = Time.time + homingTime;
         isHoming = true;
     }
 
-    void HomingMove()
+    void UpdateHomingMove()
     {
-        if(rb == null)
-        {
-            isHoming = false;
-            return;
-        }
-
-        if(Time.time > homingEndTime)
+        if(body == null || Time.time > homingEndTime)
         {
             isHoming = false;
             return;
@@ -74,32 +76,36 @@ public class EnemyHomingMissile : MonoBehaviour
 
         if(player != null)
         {
-            Vector2 targetDir = ((Vector2)player.position - rb.position).normalized;
-            moveDir = Vector3.RotateTowards(moveDir, targetDir, turnSpeed * Mathf.Deg2Rad * Time.deltaTime, 0f);
+            Vector2 targetDirection = ((Vector2)player.position - body.position).normalized;
+            moveDirection = Vector3.RotateTowards(moveDirection, targetDirection, turnSpeed * Mathf.Deg2Rad * Time.deltaTime, 0f);
         }
 
-        rb.velocity = moveDir.normalized * shotSpeed;
+        body.velocity = moveDirection.normalized * moveSpeed;
+    }
+
+    Transform FindPlayer()
+    {
+        GameObject playerObject = GameObject.FindWithTag("Player");
+        return playerObject != null ? playerObject.transform : null;
     }
 
     void RotateToVelocity()
     {
-        if(rb == null || rb.velocity.sqrMagnitude <= 0.001f)
+        if(body == null || body.velocity.sqrMagnitude <= 0.001f)
         {
             return;
         }
 
-        float angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
+        float angle = Mathf.Atan2(body.velocity.y, body.velocity.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        IDamageable target = collision.GetComponentInParent<IDamageable>();
-        if(target != null)
+        DamageRequest request = new DamageRequest(damage, gameObject, collision.bounds.center, 0f, 0f);
+        if(DamageUtility.TryApplyDamage(collision, request, false, out _))
         {
-            target.TakeDamage(new DamageRequest(damage, gameObject, collision.bounds.center, 0f, 0f));
             Destroy(gameObject);
         }
     }
 }
-

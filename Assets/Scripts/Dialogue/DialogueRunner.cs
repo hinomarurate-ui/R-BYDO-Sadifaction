@@ -1,102 +1,126 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 public class DialogueRunner : MonoBehaviour
 {
-    [SerializeField] DialogueView ui;
+    [FormerlySerializedAs("ui")]
+    [SerializeField] DialogueView view;
     [SerializeField] KeyCode advanceKey = KeyCode.Space;
     [SerializeField] bool pauseGameWhileOpen = true;
 
     [Header("World Lock")]
-    [SerializeField] MonoBehaviour[] theWorld;
+    [FormerlySerializedAs("theWorld")]
+    [SerializeField] MonoBehaviour[] disabledWhileOpen;
+    [FormerlySerializedAs("Test")]
+    [SerializeField] Dialogue startDialogue;
 
     Dialogue current;
-    int index;
-    [SerializeField] Dialogue Test;
+    int currentLineIndex;
+    float previousTimeScale = 1f;
+    bool timeScalePaused;
 
     void Start()
     {
-        Play(Test);
+        Play(startDialogue);
+    }
+
+    void OnDisable()
+    {
+        if(current != null)
+        {
+            Stop();
+        }
     }
 
     void Update()
     {
-        if(ui == null) return;
-        if (!ui.isOpen) return;
-
-        if(Input.GetKeyDown(advanceKey))
+        if(view == null || !view.IsOpen || !Input.GetKeyDown(advanceKey))
         {
-            if(ui.isTyping)
-            {
-                ui.SkipTyping();
-                return;
-            }
-
-            Next();
-        }
-    }
-
-    public void Play(Dialogue seq)
-    {
-        if (ui == null) return;
-        if (seq == null || seq.lines == null || seq.lines.Length == 0) return;
-        if (ui.isOpen) return;
-
-        current = seq;
-        index = 0;
-
-        ui.Open();
-        SetTalkingState(true);
-
-        ShowCurrent();
-        
-    }
-
-    void ShowCurrent()
-    {
-        var line = current.lines[index];
-        ui.Setline(line.name, line.text);
-        
-    }
-
-    void Next()
-    {
-        index++;
-        if(current == null || index >= current.lines.Length)
-        {
-            Stop();
             return;
         }
-        ShowCurrent();
-        
+
+        if(view.IsTyping)
+        {
+            view.SkipTyping();
+            return;
+        }
+
+        Next();
+    }
+
+    public void Play(Dialogue sequence)
+    {
+        if(view == null || view.IsOpen || sequence == null || sequence.lines == null || sequence.lines.Length == 0)
+        {
+            return;
+        }
+
+        current = sequence;
+        currentLineIndex = 0;
+        view.Open();
+        SetDialogueLock(true);
+        ShowCurrentLine();
     }
 
     public void Stop()
     {
         current = null;
-        index = 0;
+        currentLineIndex = 0;
 
-        if(ui != null)
+        if(view != null)
         {
-            ui.Close();
+            view.Close();
         }
-        SetTalkingState(false);
+
+        SetDialogueLock(false);
     }
 
-    void SetTalkingState(bool talking)
+    void Next()
+    {
+        currentLineIndex++;
+        if(current == null || currentLineIndex >= current.lines.Length)
+        {
+            Stop();
+            return;
+        }
+
+        ShowCurrentLine();
+    }
+
+    void ShowCurrentLine()
+    {
+        DialogueLine line = current.lines[currentLineIndex];
+        view.SetLine(line.speakerName, line.body);
+    }
+
+    void SetDialogueLock(bool locked)
     {
         if(pauseGameWhileOpen)
-        Time.timeScale = talking ? 0f : 1f;
-
-        if(theWorld != null)
         {
-            foreach (var b in theWorld)
+            if(locked && !timeScalePaused)
             {
-                if(b) b.enabled = !talking;
+                previousTimeScale = Time.timeScale;
+                Time.timeScale = 0f;
+                timeScalePaused = true;
+            }
+            else if(!locked && timeScalePaused)
+            {
+                Time.timeScale = previousTimeScale;
+                timeScalePaused = false;
             }
         }
-        
+
+        if(disabledWhileOpen == null)
+        {
+            return;
+        }
+
+        foreach(MonoBehaviour behaviour in disabledWhileOpen)
+        {
+            if(behaviour != null)
+            {
+                behaviour.enabled = !locked;
+            }
+        }
     }
-
-
 }
-

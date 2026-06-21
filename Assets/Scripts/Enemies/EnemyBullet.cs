@@ -21,13 +21,10 @@ public class EnemyBullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        IDamageable target = collision.GetComponentInParent<IDamageable>();
-        if(target == null)
+        DamageRequest request = new DamageRequest(damage, gameObject, collision.bounds.center, 0f, 0f);
+        if(DamageUtility.TryApplyDamage(collision, request, false, out _))
         {
-            return;
+            Destroy(gameObject);
         }
-
-        target.TakeDamage(new DamageRequest(damage, gameObject, collision.bounds.center, 0f, 0f));
-        Destroy(gameObject);
     }
 }

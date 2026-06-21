@@ -1,50 +1,52 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerBullet : MonoBehaviour
 {
-  
-  public int Damage;
-  [SerializeField]
-  float Range;
-    [SerializeField]
-  float Speed =1;
-    [SerializeField]
-  Vector2 Dir;
-  Rigidbody2D rb;
+    [FormerlySerializedAs("Damage")]
+    [SerializeField] int damage = 1;
+    [FormerlySerializedAs("Range")]
+    [SerializeField] float lifeTime = 2f;
+    [FormerlySerializedAs("Speed")]
+    [SerializeField] float speed = 1f;
+    [FormerlySerializedAs("Dir")]
+    [SerializeField] Vector2 direction = Vector2.right;
 
-  float killShakePower = 0.3f;
-  float killShakeTime = 0.2f;
+    [SerializeField] float killShakePower = 0.3f;
+    [SerializeField] float killShakeTime = 0.2f;
 
-    public void Init(Vector2 dir,float speed)
+    Rigidbody2D body;
+
+    public void Init(Vector2 launchDirection, float launchSpeed)
     {
-        rb = GetComponent<Rigidbody2D>();
-        Dir = dir.sqrMagnitude > 0f ? dir.normalized : Vector2.right;
-        Speed = speed;
-        if(rb != null)
+        body = GetComponent<Rigidbody2D>();
+        direction = launchDirection.sqrMagnitude > 0f ? launchDirection.normalized : Vector2.right;
+        speed = launchSpeed;
+
+        if(body != null)
         {
-            rb.velocity = Dir * Speed;
+            body.velocity = direction * speed;
         }
 
-        float angle = Mathf.Atan2(Dir.y,Dir.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.AngleAxis(angle,Vector3.forward);
-        Destroy(gameObject,Range);
+        RotateToDirection(direction);
+        Destroy(gameObject, lifeTime);
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.CompareTag("Enemy"))
+        if(!collision.CompareTag("Enemy"))
         {
-            IDamageable enemy = collision.GetComponentInParent<IDamageable>();
-            DamageRequest request = new DamageRequest(Damage, gameObject, collision.bounds.center, killShakePower, killShakeTime);
-            if(enemy != null && enemy.TakeDamage(request).Killed)
-            {
-                ScreenShake.Shake(killShakePower,killShakeTime);
-            }
-            Destroy(gameObject);
+            return;
         }
+
+        DamageRequest request = new DamageRequest(damage, gameObject, collision.bounds.center, killShakePower, killShakeTime);
+        DamageUtility.TryApplyDamage(collision, request, true, out _);
+        Destroy(gameObject);
+    }
+
+    void RotateToDirection(Vector2 targetDirection)
+    {
+        float angle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
     }
 }
-
-
