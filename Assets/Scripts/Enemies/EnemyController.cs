@@ -6,8 +6,8 @@ public class EnemyController : MonoBehaviour
 {
     [SerializeField] EnemyDefinition definition;
 
-    [SerializeField] protected GroundCheck ground;
-    [SerializeField] protected GakeChecker gake;
+    [SerializeField] protected GroundSensor ground;
+    [SerializeField] protected LedgeSensor gake;
     [SerializeField] protected EnemyDefinition Status;
     [SerializeField] protected EnemyHealth HP;
     [SerializeField] protected MonoBehaviour Move;
@@ -320,3 +320,4 @@ public class EnemyController : MonoBehaviour
         }
     }
 }
+

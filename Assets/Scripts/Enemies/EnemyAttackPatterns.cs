@@ -56,7 +56,7 @@ public static class FanShotAttackPattern
 
 public static class MissileBurstAttackPattern
 {
-    public static EnemyMissile Spawn(
+    public static EnemyHomingMissile Spawn(
         GameObject bulletPrefab,
         Vector3 origin,
         Vector2 direction,
@@ -70,7 +70,7 @@ public static class MissileBurstAttackPattern
         }
 
         GameObject bullet = Object.Instantiate(bulletPrefab, origin, Quaternion.identity);
-        EnemyMissile enemyMissile = bullet.GetComponent<EnemyMissile>();
+        EnemyHomingMissile enemyMissile = bullet.GetComponent<EnemyHomingMissile>();
         if(enemyMissile != null)
         {
             enemyMissile.Init(direction, speed, lifeTime, damage);
@@ -79,3 +79,4 @@ public static class MissileBurstAttackPattern
         return enemyMissile;
     }
 }
+

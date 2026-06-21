@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour, IDamageable
      public float gravity; //驥榊鴨
      public float jumpSpeed;
      public float jumpHeight;
-     public GroundCheck ground;
+     public GroundSensor ground;
 
      [Header("HP")]
      [SerializeField] int maxHP = 100;
@@ -488,7 +488,7 @@ public class PlayerController : MonoBehaviour, IDamageable
         Vector3 spawnPosition = origin + spawnOffset;
 
         GameObject missileObject = Instantiate(bydoMissilePrefab, spawnPosition, Quaternion.identity);
-        Missile missile = missileObject.GetComponent<Missile>();
+        PlayerHomingMissile missile = missileObject.GetComponent<PlayerHomingMissile>();
         if (missile == null)
         {
           Destroy(missileObject);
@@ -528,7 +528,7 @@ public class PlayerController : MonoBehaviour, IDamageable
             DamageResult result = damageable.TakeDamage(new DamageRequest(damage, gameObject, h.bounds.center, shakePower, shakeTime));
             if(result.Killed)
             {
-              ShakeScreen.Shake(shakePower,shakeTime);
+              ScreenShake.Shake(shakePower,shakeTime);
             }
             
         }
@@ -542,3 +542,4 @@ public class PlayerController : MonoBehaviour, IDamageable
         }
       }
  }
+

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class GakeChecker : MonoBehaviour
+public class LedgeSensor : MonoBehaviour
 {
     const string GakeTag = "Gake";
 
@@ -39,3 +39,4 @@ public class GakeChecker : MonoBehaviour
         return collision != null && collision.CompareTag(GakeTag);
     }
 }
+

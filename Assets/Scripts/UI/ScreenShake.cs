@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [DefaultExecutionOrder(100000)]
-public class ShakeScreen : MonoBehaviour
+public class ScreenShake : MonoBehaviour
 {
     float shakePower;
     float shakeTime;
@@ -14,10 +14,10 @@ public class ShakeScreen : MonoBehaviour
         Camera mainCamera = Camera.main;
         if(mainCamera == null) return;
 
-        ShakeScreen shaker = mainCamera.GetComponent<ShakeScreen>();
+        ScreenShake shaker = mainCamera.GetComponent<ScreenShake>();
         if(shaker == null)
         {
-            shaker = mainCamera.gameObject.AddComponent<ShakeScreen>();
+            shaker = mainCamera.gameObject.AddComponent<ScreenShake>();
         }
 
         shaker.StartShake(power, time);
@@ -52,3 +52,4 @@ public class ShakeScreen : MonoBehaviour
         
     }
 }
+

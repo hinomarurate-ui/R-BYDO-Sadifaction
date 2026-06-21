@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Missile : MonoBehaviour
+public class PlayerHomingMissile : MonoBehaviour
 {
     [SerializeField] float speed = 20f;
     [SerializeField] float turnSpeed = 360f;
@@ -146,9 +146,10 @@ public class Missile : MonoBehaviour
         DamageRequest request = new DamageRequest(damage, gameObject, collision.bounds.center, killShakePower, killShakeTime);
         if(enemy.TakeDamage(request).Killed)
         {
-           ShakeScreen.Shake(killShakePower,killShakeTime);
+           ScreenShake.Shake(killShakePower,killShakeTime);
         }
         Destroy(gameObject);
     }
 
 }
+

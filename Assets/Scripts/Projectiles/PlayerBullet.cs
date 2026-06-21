@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class PlayerBullet : MonoBehaviour
 {
   
   public int Damage;
@@ -40,9 +40,11 @@ public class Bullet : MonoBehaviour
             DamageRequest request = new DamageRequest(Damage, gameObject, collision.bounds.center, killShakePower, killShakeTime);
             if(enemy != null && enemy.TakeDamage(request).Killed)
             {
-                ShakeScreen.Shake(killShakePower,killShakeTime);
+                ScreenShake.Shake(killShakePower,killShakeTime);
             }
             Destroy(gameObject);
         }
     }
 }
+
+

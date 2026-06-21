@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public class DialogueButton : MonoBehaviour
+public class DialogueRunner : MonoBehaviour
 {
-    [SerializeField] DialogueText ui;
+    [SerializeField] DialogueView ui;
     [SerializeField] KeyCode advanceKey = KeyCode.Space;
     [SerializeField] bool pauseGameWhileOpen = true;
 
@@ -99,3 +99,4 @@ public class DialogueButton : MonoBehaviour
 
 
 }
+

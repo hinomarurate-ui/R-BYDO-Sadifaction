@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyMissile : MonoBehaviour
+public class EnemyHomingMissile : MonoBehaviour
 {
     [SerializeField] int damage = 10;
     [SerializeField] float upSpeed = 2f; 
@@ -102,3 +102,4 @@ public class EnemyMissile : MonoBehaviour
         }
     }
 }
+

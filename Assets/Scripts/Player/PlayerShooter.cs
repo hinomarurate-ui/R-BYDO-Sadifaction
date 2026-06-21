@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Shot : MonoBehaviour
+public class PlayerShooter : MonoBehaviour
 {
     [SerializeField]
     Transform ShotPoint;
@@ -50,7 +50,7 @@ public class Shot : MonoBehaviour
         LastShotTime = Time.time;
         GameObject bulletObject = Instantiate(BydoShot,ShotPoint.position,Quaternion.identity);
         Vector2 ShotDir = getShotDirection();
-        Bullet bullet = bulletObject.GetComponent<Bullet>();
+        PlayerBullet bullet = bulletObject.GetComponent<PlayerBullet>();
         if(bullet != null)
         {
             bullet.Init(ShotDir,BulletSpeed);
@@ -103,3 +103,4 @@ public class Shot : MonoBehaviour
         }
     }
 }
+

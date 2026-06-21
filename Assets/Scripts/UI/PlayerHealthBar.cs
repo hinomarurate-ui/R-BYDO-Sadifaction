@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerHPUI : MonoBehaviour
+public class PlayerHealthBar : MonoBehaviour
 {
     public PlayerController player;
     public Image hpBarImage;
@@ -45,3 +45,4 @@ public class PlayerHPUI : MonoBehaviour
         hpBarImage.fillAmount = Mathf.Lerp(emptyFillAmount, fullFillAmount, rate);
     }
 }
+

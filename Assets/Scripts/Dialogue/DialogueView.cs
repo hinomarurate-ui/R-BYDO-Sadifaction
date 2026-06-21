@@ -2,7 +2,7 @@
 using TMPro;
 using UnityEngine;
 
-public class DialogueText : MonoBehaviour
+public class DialogueView : MonoBehaviour
 {
     [SerializeField] GameObject panelRoot;
     [SerializeField] TMP_Text Name;
@@ -113,3 +113,4 @@ public class DialogueText : MonoBehaviour
 
 
 }
+

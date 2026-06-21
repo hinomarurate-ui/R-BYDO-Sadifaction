@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class GroundCheck : MonoBehaviour
+public class GroundSensor : MonoBehaviour
 {
     const string GroundTag = "Ground";
     const float GroundTolerance = 0.05f;
@@ -62,3 +62,4 @@ public class GroundCheck : MonoBehaviour
         touchGround.Remove(collision);
     }
 }
+
