@@ -185,7 +185,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &3421184230293739807
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -224,13 +224,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e538b32b4cf3412587b08aa6875a647d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ground: {fileID: 0}
-  gake: {fileID: 3421184230222210590}
-  Status: {fileID: 11400000, guid: 0eaf820a32ae47d45950ec13b89ddc9b, type: 2}
-  HP: {fileID: 3421184230293739801}
-  Move: {fileID: 3421184230293739800}
-  isGround: 0
-  isGake: 0
+  definition: {fileID: 0}
+  groundSensor: {fileID: 0}
+  ledgeSensor: {fileID: 3421184230222210590}
+  fallbackDefinition: {fileID: 11400000, guid: 0eaf820a32ae47d45950ec13b89ddc9b, type: 2}
+  health: {fileID: 3421184230293739801}
+  movementOverride: {fileID: 3421184230293739800}
+  isGroundedDebug: 0
+  isAtLedgeDebug: 0
 --- !u!114 &3421184230293739801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,18 +244,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3411002b1edf4015bdaca6c31c29d062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deathTorque: 5
-  em: {fileID: 0}
-  ea: {fileID: 0}
-  deathcount: 1
-  smashX: 10
-  smashY: 12
-  Sm: {fileID: 0}
-  EnemyScore: 200
-  Bomb: {fileID: 3874840010022860247, guid: 000629cb1dd3cec4488c7c38972c7a1c, type: 3}
-  Bombtimer: 1
-  DmgS: {fileID: 8300000, guid: b1093635c9619dc4bb6b94bddfff79cd, type: 3}
-  DthS: {fileID: 8300000, guid: 1b3378c9bf1ab4c45a7c364da7b5e5d4, type: 3}
+  scoreManager: {fileID: 0}
+  fallbackDeathTorque: 10
+  fallbackFadeTime: 1
+  fallbackSmashX: 8
+  fallbackSmashY: 5
+  fallbackScore: 100
+  fallbackBombPrefab: {fileID: 0}
+  fallbackBombLifeTime: 1
+  fallbackDamageSound: {fileID: 0}
+  fallbackDeathSound: {fileID: 0}
 --- !u!114 &3421184230293739800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,13 +267,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useDefinitionSettings: 0
-  MoveSpeed: 2
-  Dirx: -1
+  moveSpeed: 2
+  directionX: -1
   enemy: {fileID: 0}
-  JumpImpulse: 5
-  JumpPower: 0.6
-  JumpSlow: 2
-  MaxHeight: 0.7
+  jumpImpulse: 5
+  jumpPower: 0.6
+  jumpSlowHeight: 2
+  maxJumpHeight: 0.7
 --- !u!95 &3421184230293739814
 Animator:
   serializedVersion: 3
@@ -424,19 +423,19 @@ MonoBehaviour:
   useDefinitionSettings: 0
   bulletPrefab: {fileID: 3766476339654933344, guid: b7b065f7f78677d409d4bb5403131e7a, type: 3}
   shotPoint: {fileID: 8736449061821607591}
-  enemyMove: {fileID: 3421184230293739800}
   enemy: {fileID: 0}
   searchRange: 8
-  attackCooltime: 2
-  shotChargetime: 0.35
+  attackCooldown: 2
+  shotChargeTime: 0.35
   attackEndTime: 0.25
   bulletSpeed: 6
   bulletLifeTime: 3
+  bulletDamage: 15
   bulletCount: 1
-  bulletAngleSpace: 12
+  bulletAngleSpacing: 12
   aimHeight: 0.5
   useMeleeAttack: 1
-  meleeChargetime: 0.35
+  meleeChargeTime: 0.35
   meleeSearchRange: 5
   meleeRadius: 2
   meleeDamage: 15
