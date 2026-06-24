@@ -508,7 +508,7 @@ public class PlayerController : MonoBehaviour, IDamageable
         Transform shotPoint = transform.Find("ShotPosition");
         Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
         float centeredIndex = missileIndex - ((Mathf.Max(1, bydoMissileCount) - 1) * 0.5f);
-        Vector3 spawnOffset = new Vector3(-0.35f * dirX, 1.2f + Mathf.Abs(centeredIndex) * 0.35f, 0f);
+        Vector3 spawnOffset = new Vector3(-0.35f * dirX, -1f + Mathf.Abs(centeredIndex) * 0.35f, 0f);
         GameObject missileObject = Instantiate(bydoMissilePrefab, origin + spawnOffset, Quaternion.identity);
         PlayerHomingMissile missile = missileObject.GetComponent<PlayerHomingMissile>();
 
