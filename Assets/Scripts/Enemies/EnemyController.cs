@@ -134,6 +134,26 @@ public class EnemyController : MonoBehaviour
         ChangeState(EnemyState.Idle);
     }
 
+    public void ActivateRuntime()
+    {
+        if(!initialized)
+        {
+            InitializeRuntime();
+            return;
+        }
+
+        ResolveTarget();
+        ResolveMovement();
+        ResolveAttackPatterns();
+        ResolveRoutines();
+        RefreshSensorState();
+
+        if(State != EnemyState.Dead)
+        {
+            ChangeState(EnemyState.Idle);
+        }
+    }
+
     void InitializeRuntime()
     {
         if(initialized)

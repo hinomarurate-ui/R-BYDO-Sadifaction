@@ -34,6 +34,11 @@ public class EnemyActivator : MonoBehaviour
         isActivated = true;
         SetPhysicsActive(true);
         SetComponentsActive(true);
+
+        if(enemy != null)
+        {
+            enemy.ActivateRuntime();
+        }
     }
 
     void SetSleepingState()
