@@ -1,9 +1,12 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 {
+    const string GroundTag = "Ground";
+
     [SerializeField] protected bool useDefinitionSettings = true;
     [FormerlySerializedAs("MoveSpeed")]
     [SerializeField] protected float moveSpeed = 2f;
@@ -24,8 +27,11 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
     float jumpStartY;
     bool isJumping;
+    bool leftGroundAfterJump;
+    bool isApplyingJumpAssist;
     bool isChargingJump;
     Coroutine jumpChargeRoutine;
+    readonly HashSet<Collider2D> bodyGroundContacts = new HashSet<Collider2D>();
 
     public virtual void Initialize(EnemyController controller)
     {
@@ -40,6 +46,8 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
         isChargingJump = false;
         isJumping = false;
+        leftGroundAfterJump = false;
+        isApplyingJumpAssist = false;
     }
 
     public virtual bool Tick()
@@ -49,16 +57,20 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
             return false;
         }
 
-        if(!enemy.IsGrounded)
-        {
-            return isJumping;
-        }
+        bool isGrounded = enemy.IsGrounded || IsBodyGrounded();
+        bool isAtLedge = enemy.IsAtLedge;
 
-        isJumping = false;
+        RefreshJumpState(isGrounded);
 
-        if(enemy.IsAtLedge)
+        if(!isJumping && isAtLedge)
         {
             StartJumpChargeIfNeeded();
+            return false;
+        }
+
+        if(!isGrounded || isJumping)
+        {
+            MoveAirborneX(directionX);
             return false;
         }
 
@@ -68,8 +80,14 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
     public virtual void FixedTick()
     {
-        if(!isJumping || body == null || body.velocity.y < 0f)
+        if(!isJumping || !isApplyingJumpAssist || body == null)
         {
+            return;
+        }
+
+        if(body.velocity.y <= 0f)
+        {
+            isApplyingJumpAssist = false;
             return;
         }
 
@@ -88,6 +106,7 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         }
         else
         {
+            isApplyingJumpAssist = false;
             body.velocity = new Vector2(body.velocity.x, Mathf.Min(body.velocity.y, 0f));
         }
     }
@@ -109,6 +128,12 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
     }
 
+    protected virtual void MoveAirborneX(float direction)
+    {
+        SetWalk(false);
+        body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+    }
+
     protected virtual void Jump(float direction)
     {
         if(body == null)
@@ -117,7 +142,10 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         }
 
         isJumping = true;
+        leftGroundAfterJump = false;
+        isApplyingJumpAssist = true;
         jumpStartY = body.position.y;
+        SetWalk(false);
         SetJump(true);
         SetJumpCharge(false);
         body.AddForce(Vector2.up * jumpImpulse, ForceMode2D.Impulse);
@@ -144,7 +172,7 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
         isChargingJump = false;
 
-        if(!enemy.IsGrounded || !enemy.IsAtLedge)
+        if(!enemy.IsAtLedge)
         {
             SetJumpCharge(false);
             jumpChargeRoutine = null;
@@ -184,6 +212,104 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         {
             jumpChargeRoutine = StartCoroutine(JumpCharge());
         }
+    }
+
+    void RefreshJumpState(bool isGrounded)
+    {
+        if(!isJumping)
+        {
+            return;
+        }
+
+        if(!isGrounded)
+        {
+            leftGroundAfterJump = true;
+            return;
+        }
+
+        if(leftGroundAfterJump && body.velocity.y <= 0.01f)
+        {
+            FinishJump();
+        }
+    }
+
+    void FinishJump()
+    {
+        isJumping = false;
+        leftGroundAfterJump = false;
+        isApplyingJumpAssist = false;
+        SetJump(false);
+        SetJumpCharge(false);
+        SetWalk(Mathf.Abs(directionX) > 0f);
+    }
+
+    bool IsBodyGrounded()
+    {
+        bodyGroundContacts.RemoveWhere(collision => collision == null || !collision.enabled);
+        return bodyGroundContacts.Count > 0;
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        RefreshBodyGroundContact(collision);
+        TryFinishJumpFromGroundCollision(collision);
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        RefreshBodyGroundContact(collision);
+        TryFinishJumpFromGroundCollision(collision);
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if(collision != null && collision.collider != null)
+        {
+            bodyGroundContacts.Remove(collision.collider);
+        }
+    }
+
+    void RefreshBodyGroundContact(Collision2D collision)
+    {
+        if(collision == null || collision.collider == null)
+        {
+            return;
+        }
+
+        if(IsGroundCollision(collision))
+        {
+            bodyGroundContacts.Add(collision.collider);
+        }
+        else
+        {
+            bodyGroundContacts.Remove(collision.collider);
+        }
+    }
+
+    void TryFinishJumpFromGroundCollision(Collision2D collision)
+    {
+        if(isJumping && body != null && body.velocity.y <= 0.01f && IsGroundCollision(collision))
+        {
+            FinishJump();
+        }
+    }
+
+    bool IsGroundCollision(Collision2D collision)
+    {
+        return collision != null && collision.collider != null && collision.collider.CompareTag(GroundTag) && HasUpwardContact(collision);
+    }
+
+    bool HasUpwardContact(Collision2D collision)
+    {
+        for(int i = 0; i < collision.contactCount; i++)
+        {
+            if(collision.GetContact(i).normal.y > 0.3f)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     EnemyDefinition.GroundPatrolSettings CurrentGroundPatrolSettings()

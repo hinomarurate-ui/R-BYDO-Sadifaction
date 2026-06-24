@@ -22,7 +22,8 @@ public class GroundSensor : MonoBehaviour
             return false;
         }
 
-        groundContacts.RemoveWhere(collision => collision == null || !collision.enabled);
+        Bounds bounds = ownCollider.bounds;
+        groundContacts.RemoveWhere(collision => collision == null || !collision.enabled || !bounds.Intersects(collision.bounds));
 
         foreach(Collider2D collision in groundContacts)
         {
@@ -32,7 +33,7 @@ public class GroundSensor : MonoBehaviour
             }
         }
 
-        return false;
+        return RefreshCurrentOverlaps();
     }
 
     bool IsGroundSurface(Collider2D collision)
@@ -60,6 +61,29 @@ public class GroundSensor : MonoBehaviour
     void OnTriggerExit2D(Collider2D collision)
     {
         groundContacts.Remove(collision);
+    }
+
+    bool RefreshCurrentOverlaps()
+    {
+        Bounds bounds = ownCollider.bounds;
+        Collider2D[] overlaps = Physics2D.OverlapBoxAll(bounds.center, bounds.size, 0f);
+
+        for(int i = 0; i < overlaps.Length; i++)
+        {
+            Collider2D collision = overlaps[i];
+            if(collision == null || collision == ownCollider)
+            {
+                continue;
+            }
+
+            if(IsGroundSurface(collision))
+            {
+                groundContacts.Add(collision);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
