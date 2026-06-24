@@ -9,8 +9,56 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79c858f770717284ca4c142186c2d2ea, type: 3}
+  m_Script: {fileID: 11500000, guid: bc27148fdd884ea3a496c448079cafa5, type: 3}
   m_Name: Skaley
   m_EditorClassIdentifier: 
-  MaxHP: 2
-  MoveSpeed: 2
+  maxHealth: 2
+  score: 200
+  hitStunTime: 0.12
+  groundPatrol:
+    moveSpeed: 2
+    directionX: -1
+    jumpImpulse: 5
+    jumpPower: 0.6
+    jumpSlow: 2
+    maxHeight: 0.7
+    jumpChargeTime: 0.5
+    postJumpLockTime: 0.3
+  attack:
+    searchRange: 8
+    attackCooltime: 2
+    chargeTime: 0.35
+    endTime: 0.25
+    bulletSpeed: 6
+    bulletLifeTime: 3
+    bulletCount: 1
+    bulletAngleSpace: 12
+    bulletInterval: 0.1
+    bulletDamage: 15
+    aimHeight: 0.5
+    useMeleeAttack: 1
+    meleeChargeTime: 0.35
+    meleeSearchRange: 5
+    meleeRadius: 2
+    meleeDamage: 15
+    playerLayers:
+      serializedVersion: 2
+      m_Bits: 128
+  death:
+    deathTorque: 5
+    fadeTime: 1
+    smashX: 8
+    smashY: 5
+    bombPrefab: {fileID: 3874840010022860247, guid: 000629cb1dd3cec4488c7c38972c7a1c, type: 3}
+    bombLifeTime: 1
+    damageSound: {fileID: 8300000, guid: b1093635c9619dc4bb6b94bddfff79cd, type: 3}
+    deathSound: {fileID: 8300000, guid: 1b3378c9bf1ab4c45a7c364da7b5e5d4, type: 3}
+  animation:
+    walkBool: Walk
+    jumpBool: Jump
+    jumpChargeBool: JumpC
+    shotBool: Shot
+    attackBool: Attack
+    missileBool: Missile
+    deathTrigger: Death
+    missileFinishTrigger: MissileFinish
