@@ -102,8 +102,15 @@ public class EnemyHomingMissile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
+        PlayerController player = collision.GetComponentInParent<PlayerController>();
+        if(player == null)
+        {
+            return;
+        }
+
         DamageRequest request = new DamageRequest(damage, gameObject, collision.bounds.center, 0f, 0f);
-        if(DamageUtility.TryApplyDamage(collision, request, false, out _))
+        DamageResult result = DamageUtility.ApplyDamage(player, request, false);
+        if(result.Applied)
         {
             Destroy(gameObject);
         }
