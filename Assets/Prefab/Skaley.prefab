@@ -175,7 +175,7 @@ Transform:
   m_GameObject: {fileID: 124636929894322600}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 54.35988, y: -4.9115305, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 1}
+  m_LocalScale: {x: 0.55, y: 0.55, z: 1}
   m_Children:
   - {fileID: 124636929588857456}
   - {fileID: 124636929831251622}
@@ -294,13 +294,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e538b32b4cf3412587b08aa6875a647d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ground: {fileID: 0}
-  gake: {fileID: 124636929831251624}
-  Status: {fileID: 11400000, guid: 1ea27930af053e049bfd0f7c29a0fbae, type: 2}
-  HP: {fileID: 124636929894322607}
-  Move: {fileID: 124636929894322606}
-  isGround: 0
-  isGake: 0
+  definition: {fileID: 0}
+  groundSensor: {fileID: 0}
+  ledgeSensor: {fileID: 124636929831251624}
+  fallbackDefinition: {fileID: 11400000, guid: 1ea27930af053e049bfd0f7c29a0fbae, type: 2}
+  health: {fileID: 124636929894322607}
+  movementOverride: {fileID: 124636929894322606}
+  isGroundedDebug: 0
+  isAtLedgeDebug: 0
 --- !u!114 &124636929894322607
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,18 +314,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3411002b1edf4015bdaca6c31c29d062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deathTorque: 5
-  em: {fileID: 0}
-  ea: {fileID: 0}
-  deathcount: 1
-  smashX: 10
-  smashY: 12
-  Sm: {fileID: 0}
-  EnemyScore: 200
-  Bomb: {fileID: 3874840010022860247, guid: 000629cb1dd3cec4488c7c38972c7a1c, type: 3}
-  Bombtimer: 1
-  DmgS: {fileID: 8300000, guid: b1093635c9619dc4bb6b94bddfff79cd, type: 3}
-  DthS: {fileID: 8300000, guid: 1b3378c9bf1ab4c45a7c364da7b5e5d4, type: 3}
+  scoreManager: {fileID: 0}
+  fallbackDeathTorque: 10
+  fallbackFadeTime: 1
+  fallbackSmashX: 8
+  fallbackSmashY: 5
+  fallbackScore: 100
+  fallbackBombPrefab: {fileID: 0}
+  fallbackBombLifeTime: 1
+  fallbackDamageSound: {fileID: 0}
+  fallbackDeathSound: {fileID: 0}
 --- !u!114 &124636929894322606
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -338,13 +337,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useDefinitionSettings: 0
-  MoveSpeed: 2
-  Dirx: -1
+  moveSpeed: 2
+  directionX: -1
   enemy: {fileID: 0}
-  JumpImpulse: 5
-  JumpPower: 0.6
-  JumpSlow: 2
-  MaxHeight: 0.7
+  jumpImpulse: 5
+  jumpPower: 0.6
+  jumpSlowHeight: 2
+  maxJumpHeight: 0.7
 --- !u!95 &124636929894322576
 Animator:
   serializedVersion: 3
@@ -494,19 +493,19 @@ MonoBehaviour:
   useDefinitionSettings: 0
   bulletPrefab: {fileID: 3766476339654933344, guid: b7b065f7f78677d409d4bb5403131e7a, type: 3}
   shotPoint: {fileID: 6340692709065844241}
-  enemyMove: {fileID: 124636929894322606}
   enemy: {fileID: 0}
   searchRange: 8
-  attackCooltime: 2
-  shotChargetime: 0.35
+  attackCooldown: 2
+  shotChargeTime: 0.35
   attackEndTime: 0.25
   bulletSpeed: 6
   bulletLifeTime: 3
+  bulletDamage: 15
   bulletCount: 1
-  bulletAngleSpace: 12
+  bulletAngleSpacing: 12
   aimHeight: 0.5
   useMeleeAttack: 1
-  meleeChargetime: 0.35
+  meleeChargeTime: 0.35
   meleeSearchRange: 5
   meleeRadius: 2
   meleeDamage: 15

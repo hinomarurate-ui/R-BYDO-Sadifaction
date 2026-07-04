@@ -134,7 +134,7 @@ Transform:
   m_GameObject: {fileID: 5950868178451081487}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 62.386, y: -2.869, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_Children:
   - {fileID: 5950868177331491501}
   - {fileID: 5950868178775476172}
@@ -253,13 +253,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e538b32b4cf3412587b08aa6875a647d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ground: {fileID: 0}
-  gake: {fileID: 5950868178775476162}
-  Status: {fileID: 11400000, guid: b460fcba93c7f994fb5ee2558f3b344e, type: 2}
-  HP: {fileID: 5950868178451081482}
-  Move: {fileID: 0}
-  isGround: 0
-  isGake: 0
+  definition: {fileID: 0}
+  groundSensor: {fileID: 0}
+  ledgeSensor: {fileID: 5950868178775476162}
+  fallbackDefinition: {fileID: 11400000, guid: b460fcba93c7f994fb5ee2558f3b344e, type: 2}
+  health: {fileID: 5950868178451081482}
+  movementOverride: {fileID: 0}
+  isGroundedDebug: 0
+  isAtLedgeDebug: 0
 --- !u!114 &5950868178451081482
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -272,18 +273,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3411002b1edf4015bdaca6c31c29d062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deathTorque: 5
-  em: {fileID: 0}
-  ea: {fileID: 0}
-  deathcount: 1
-  smashX: 10
-  smashY: 12
-  Sm: {fileID: 0}
-  EnemyScore: 500
-  Bomb: {fileID: 3874840010022860247, guid: 000629cb1dd3cec4488c7c38972c7a1c, type: 3}
-  Bombtimer: 1
-  DmgS: {fileID: 8300000, guid: b1093635c9619dc4bb6b94bddfff79cd, type: 3}
-  DthS: {fileID: 8300000, guid: 1b3378c9bf1ab4c45a7c364da7b5e5d4, type: 3}
+  scoreManager: {fileID: 0}
+  fallbackDeathTorque: 10
+  fallbackFadeTime: 1
+  fallbackSmashX: 8
+  fallbackSmashY: 5
+  fallbackScore: 100
+  fallbackBombPrefab: {fileID: 0}
+  fallbackBombLifeTime: 1
+  fallbackDamageSound: {fileID: 0}
+  fallbackDeathSound: {fileID: 0}
 --- !u!95 &5950868178451081480
 Animator:
   serializedVersion: 3
@@ -431,22 +430,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useDefinitionSettings: 0
-  enemy: {fileID: 5950868178451081493}
   bulletPrefab: {fileID: 6805678355545977460, guid: 02743ff1d2f0fc24793f94024564bc00, type: 3}
   shotPoint: {fileID: 5950868177569004054}
   searchRange: 8
-  attackCooltime: 2
-  shotChargetime: 0.35
+  attackCooldown: 2
+  shotChargeTime: 0.35
   attackEndTime: 0.25
   bulletSpeed: 6
   bulletLifeTime: 3
   bulletCount: 1
-  bulletAngleSpace: 12
+  bulletAngleSpacing: 12
   bulletInterval: 0.1
   bulletDamage: 15
   aimHeight: 0.5
-  Mis: {fileID: 8300000, guid: cb95d19eb8874364283b61bcf4177716, type: 3}
-  As: {fileID: 0}
+  shotSound: {fileID: 8300000, guid: cb95d19eb8874364283b61bcf4177716, type: 3}
+  audioSource: {fileID: 0}
 --- !u!1 &5950868178750336717
 GameObject:
   m_ObjectHideFlags: 0
