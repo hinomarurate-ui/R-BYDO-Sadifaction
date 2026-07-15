@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc27148fdd884ea3a496c448079cafa5, type: 3}
   m_Name: Pstaff
   m_EditorClassIdentifier: 
-  maxHealth: 25
+  maxHealth: 15
   score: 500
   hitStunTime: 0.12
   groundPatrol:
@@ -20,19 +20,19 @@ MonoBehaviour:
     directionX: 0
     jumpImpulse: 0
     jumpPower: 0
-    jumpSlow: 0
-    maxHeight: 0
+    jumpSlowHeight: 0
+    maxJumpHeight: 0
     jumpChargeTime: 0.5
     postJumpLockTime: 0.3
   attack:
     searchRange: 8
-    attackCooltime: 2
+    attackCooldown: 2
     chargeTime: 0.35
     endTime: 0.25
     bulletSpeed: 6
     bulletLifeTime: 3
     bulletCount: 1
-    bulletAngleSpace: 12
+    bulletAngleSpacing: 12
     bulletInterval: 0.1
     bulletDamage: 15
     aimHeight: 0.5
