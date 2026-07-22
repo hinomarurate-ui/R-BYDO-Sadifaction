@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 
 public class PlayerController : MonoBehaviour, IDamageable
 {
-    const float DefaultFacingScale = 0.6f;
+    const float DefaultFacingScale = 0.55f;
 
     [Header("Movement")]
     [FormerlySerializedAs("speed")]
@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour, IDamageable
     [SerializeField] float gravity = 25f;
     [SerializeField] float jumpSpeed = 12f;
     [SerializeField] float jumpHeight = 2f;
+    [SerializeField, Range(0f, 1f)] float jumpReleaseSpeedMultiplier = 0.45f; 
+    [SerializeField] float fallGravityMultiplier = 1.25f;
     [FormerlySerializedAs("ground")]
     [SerializeField] GroundSensor groundSensor;
 
@@ -222,7 +224,7 @@ public class PlayerController : MonoBehaviour, IDamageable
 
     void UpdateJumpVelocity()
     {
-        if(isGrounded)
+        /*if(isGrounded)
         {
             if(!isSpecialActing && jumpQueued)
             {
@@ -248,6 +250,48 @@ public class PlayerController : MonoBehaviour, IDamageable
 
         verticalSpeed = -gravity;
         isJumping = false;
+        */
+
+        if(isGrounded && verticalSpeed <= 0f)
+        {
+            if(!isSpecialActing && jumpQueued)
+            {
+                jumpQueued = false;
+                float heightSpeed = gravity > 0f && jumpHeight > 0.1f
+                 ? Mathf.Sqrt(2f * gravity * jumpHeight)
+                 : jumpSpeed;
+                verticalSpeed = Mathf.Min(jumpSpeed, heightSpeed);
+                jumpStartY = transform.position.y;
+                isJumping = true;
+                SetAnimatorBool("jump", true);
+                return;
+            }
+
+            verticalSpeed = 0f;
+            isJumping = false;
+            SetAnimatorBool("jump", false);
+            return;
+        }
+
+        if(isJumping && !jumpHeld && verticalSpeed > 0f)
+        {
+            verticalSpeed *= jumpReleaseSpeedMultiplier;
+            isJumping = false;
+        }
+
+        if(verticalSpeed > 0f && transform.position.y >= jumpStartY + jumpHeight)
+        {
+            verticalSpeed = 0f;
+            isJumping = false;
+        }
+
+        float gravityScale = verticalSpeed < 0f ? fallGravityMultiplier : 1f;
+        verticalSpeed -= gravity * gravityScale * Time.fixedDeltaTime;
+
+        if(verticalSpeed <= 0f)
+        {
+            isJumping = false;
+        }
     }
 
     void RunQueuedActions()

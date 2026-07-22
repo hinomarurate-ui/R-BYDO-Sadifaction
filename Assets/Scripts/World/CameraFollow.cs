@@ -12,7 +12,8 @@ public class CameraFollow : MonoBehaviour
         body.m_XDamping = 1f;
         body.m_YDamping = 1f;
         body.m_DeadZoneWidth =  0.1f;
-        body.m_DeadZoneHeight = 0.5f;
+        body.m_DeadZoneHeight = 2f;
+        body.m_SoftZoneHeight = 1.2f;
         body.m_ScreenY = 0.8f;
         
     }

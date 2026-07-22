@@ -43,9 +43,19 @@ public class GroundSensor : MonoBehaviour
             return false;
         }
 
-        float checkerTopY = ownCollider.bounds.max.y;
-        float groundTopY = collision.bounds.max.y;
-        return groundTopY <= checkerTopY + GroundTolerance;
+        Bounds checkerBounds = ownCollider.bounds;
+        Vector2 probePosition = new Vector2(
+            checkerBounds.center.x,
+            checkerBounds.max.y + GroundTolerance);
+        Vector2 surfacePosition = collision.ClosestPoint(probePosition);
+
+        bool isWithinCheckerWidth = surfacePosition.x >= checkerBounds.min.x - GroundTolerance
+            && surfacePosition.x <= checkerBounds.max.x + GroundTolerance;
+        bool isNearCheckerHeight = surfacePosition.y >= checkerBounds.min.y - GroundTolerance
+            && surfacePosition.y <= checkerBounds.max.y + GroundTolerance;
+        return isWithinCheckerWidth && isNearCheckerHeight;
+
+
     }
 
     void OnTriggerEnter2D(Collider2D collision)
