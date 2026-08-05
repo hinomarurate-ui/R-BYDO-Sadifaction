@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2627126529114559409}
   - component: {fileID: 2627126529114559408}
   - component: {fileID: 2627126529114559410}
+  - component: {fileID: 7274866251674149783}
   m_Layer: 15
   m_Name: Scant
   m_TagString: Enemy
@@ -289,6 +290,47 @@ MonoBehaviour:
   ledgeSensor: {fileID: 0}
   fallbackDefinition: {fileID: 0}
   health: {fileID: 2627126529114559407}
-  movementOverride: {fileID: 0}
+  movementOverride: {fileID: 7274866251674149783}
   isGroundedDebug: 0
   isAtLedgeDebug: 0
+--- !u!114 &7274866251674149783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2627126529114559402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2468b667369e8e4da367be38836dc1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverMoveSpeed: 3.5
+  horizontalRange: 6
+  bobHeight: 0.35
+  bobSpeed: 2
+  searchRange: 14
+  openingDelay: 1.5
+  attackCooldown: 2
+  chargeTime: 0.65
+  bulletPrefab: {fileID: 6005024709675353148, guid: 4ca149ef91af91f45b24e1beb0764f4a, type: 3}
+  shotPoint: {fileID: 0}
+  volleyCount: 1
+  volleyInterval: 1
+  bulletsPerVolley: 1
+  bulletAngleSpacing: 14
+  bulletSpeed: 10
+  bulletLifeTime: 4
+  bulletDamage: 50
+  aimHeight: 0.5
+  diveSpeed: 25
+  returnSpeed: 15
+  divePastDistance: 5
+  diveRadius: 1
+  diveDamage: 45
+  impactPause: 1
+  playerLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  spriteRenderer: {fileID: 0}
+  spriteFacesLeft: 1
