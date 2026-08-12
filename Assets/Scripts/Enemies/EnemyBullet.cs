@@ -16,6 +16,8 @@ public class EnemyBullet : MonoBehaviour
             body.velocity = direction.normalized * speed;
         }
 
+        transform.right = -direction;
+
         Destroy(gameObject, lifeTime);
     }
 

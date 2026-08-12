@@ -27,8 +27,9 @@ public class PlayerBullet : MonoBehaviour
         {
             body.velocity = direction * speed;
         }
+        
 
-        RotateToDirection(direction);
+        RotateToDirection(-direction);
         Destroy(gameObject, lifeTime);
     }
 

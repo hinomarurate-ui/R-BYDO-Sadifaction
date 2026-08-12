@@ -27,6 +27,7 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
     [SerializeField] float bulletLifeTime = 4f;
     [SerializeField] int bulletDamage = 50;
     [SerializeField] float aimHeight = 0.5f;
+    [SerializeField] SpriteRenderer Blast;
 
     [Header("Dive Attack")]
     [SerializeField] float diveSpeed = 25f;
@@ -174,13 +175,27 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
 
     IEnumerator RunShotAttack()
     {
+        an.SetBool("ShotMode", true);
+        an.SetBool("ShotStop", true);
+
+        if(player == null)
+        {
+            yield break;
+        }
+
+        yield return MoveToPoint(new Vector2(transform.position.x, player.position.y + 0.35f), returnSpeed, false);
+        
+
+
         if(chargeTime > 0f)
         {
-            an.SetBool("ShotMode", true);
+            
             yield return new WaitForSeconds(chargeTime);
         }
-        an.SetTrigger("Shot");
 
+
+        an.SetBool("ShotStop", false);
+        //an.SetTrigger("Shot");
         As.PlayOneShot(Shot);
         int volleys = Mathf.Max(1, volleyCount);
         for(int i = 0; i < volleys; i++)
@@ -191,7 +206,14 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
             }
 
             Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
-            Vector2 direction = (player.position + Vector3.up * aimHeight - origin).normalized;
+            Vector2 direction = player.position.x > transform.position.x ? Vector2.right : Vector2.left;
+            Vector3 Blastposition = Blast.transform.localPosition;
+            Blastposition.x = player.position.x > transform.position.x ? Mathf.Abs(Blastposition.x): -Mathf.Abs(Blastposition.x);
+
+            
+            Blast.transform.localPosition = Blastposition;
+            Blast.flipX = spriteRenderer.flipX;
+            Blast.enabled = true;
             
             FanShotAttackPattern.Shoot(
                 bulletPrefab,
@@ -203,6 +225,10 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
                 bulletLifeTime,
                 bulletDamage
             );
+
+            yield return new WaitForSeconds(0.3f);
+            Blast.enabled = false;
+
 
             if(i < volleys - 1 && volleyInterval > 0f)
             {
