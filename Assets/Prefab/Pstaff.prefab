@@ -276,7 +276,7 @@ MonoBehaviour:
   scoreManager: {fileID: 0}
   fallbackDeathTorque: 10
   fallbackFadeTime: 1
-  fallbackSmashX: 8
+  fallbackSmashX: 15
   fallbackSmashY: 5
   fallbackScore: 100
   fallbackBombPrefab: {fileID: 0}

@@ -124,7 +124,7 @@ MonoBehaviour:
   scoreManager: {fileID: 0}
   fallbackDeathTorque: 10
   fallbackFadeTime: 1
-  fallbackSmashX: 8
+  fallbackSmashX: 15
   fallbackSmashY: 5
   fallbackScore: 100
   fallbackBombPrefab: {fileID: 0}
@@ -324,6 +324,7 @@ MonoBehaviour:
   bulletLifeTime: 4
   bulletDamage: 50
   aimHeight: 0.5
+  Blast: {fileID: 0}
   diveSpeed: 25
   returnSpeed: 15
   divePastDistance: 5

@@ -56,6 +56,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             return DamageResult.Ignored(currentHealth, maxHealth);
         }
 
+        bool isSmashKill = request.Amount >= currentHealth;
         currentHealth = Mathf.Clamp(currentHealth - request.Amount, 0, maxHealth);
         PlayOneShot(CurrentDeathSettings().damageSound, fallbackDamageSound, 0.5f);
         StartCoroutine(Flash(new Color32(255, 150, 0, 255), 0.025f));
@@ -63,7 +64,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         bool killed = currentHealth <= 0;
         if(killed)
         {
-            Die(request);
+            Die(request, isSmashKill);
         }
 
         if(controller != null)
@@ -107,7 +108,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         }
     }
 
-    void Die(DamageRequest request)
+    void Die(DamageRequest request, bool isSmashKill)
     {
         if(dead)
         {
@@ -135,7 +136,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         gameObject.layer = LayerMask.NameToLayer("Corpse");
         DisableCombatBehaviours();
-        ApplyDeathImpulse(request, death);
+        if(isSmashKill)
+        {
+            ApplyDeathImpulse(request,death);
+        }
+        //ApplyDeathImpulse(request, death);
         StartCoroutine(Fadeout(death.fadeTime > 0f ? death.fadeTime : fallbackFadeTime));
     }
 
@@ -184,6 +189,13 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             return;
         }
 
+        body.bodyType = RigidbodyType2D.Dynamic;
+        body.simulated = true;
+        body.gravityScale = 1f;
+        body.constraints = RigidbodyConstraints2D.None;
+        body.velocity = Vector2.zero;
+        body.angularVelocity = 0f;
+
         float dirX = 0f;
         if(request.Source != null)
         {
@@ -200,11 +212,14 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             dirX = -1f;
         }
 
-        float smashX = death.smashX != 0f ? death.smashX : fallbackSmashX;
-        float smashY = death.smashY != 0f ? death.smashY : fallbackSmashY;
-        float torque = death.deathTorque != 0f ? death.deathTorque : fallbackDeathTorque;
+        float smashX = fallbackSmashX != 0f ? fallbackSmashX : death.smashX;
+        float smashY = fallbackSmashY != 0f ? fallbackSmashY : death.smashY;
+        float torque = fallbackDeathTorque != 0f ? fallbackDeathTorque : death.deathTorque;
         Vector2 impulse = new Vector2(dirX * smashX, smashY);
-        body.AddForce(impulse, ForceMode2D.Impulse);
+        body.velocity = impulse;
+        body.WakeUp();
+        Debug.Log(name+smashX+smashY+body.velocity);
+        
         body.AddTorque(torque * (impulse.x >= 0f ? -1f : 1f), ForceMode2D.Impulse);
     }
 

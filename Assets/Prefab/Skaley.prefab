@@ -175,7 +175,7 @@ Transform:
   m_GameObject: {fileID: 124636929894322600}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 54.35988, y: -4.9115305, z: 0}
-  m_LocalScale: {x: 0.55, y: 0.55, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_Children:
   - {fileID: 124636929588857456}
   - {fileID: 124636929831251622}
@@ -317,7 +317,7 @@ MonoBehaviour:
   scoreManager: {fileID: 0}
   fallbackDeathTorque: 10
   fallbackFadeTime: 1
-  fallbackSmashX: 8
+  fallbackSmashX: 15
   fallbackSmashY: 5
   fallbackScore: 100
   fallbackBombPrefab: {fileID: 0}

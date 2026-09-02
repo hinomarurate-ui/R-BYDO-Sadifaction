@@ -3208,6 +3208,14 @@ PrefabInstance:
       value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 124636929894322604, guid: 69c9799a6280e3f4687709616143be12, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 124636929894322604, guid: 69c9799a6280e3f4687709616143be12, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 124636929894322604, guid: 69c9799a6280e3f4687709616143be12, type: 3}
       propertyPath: m_LocalPosition.x
       value: 38.77
       objectReference: {fileID: 0}
@@ -4242,7 +4250,7 @@ MonoBehaviour:
   enemyLayers:
     serializedVersion: 2
     m_Bits: 32768
-  meleeDamage: 3
+  meleeDamage: 2
   meleeCooltime: 0.1
   hitDelay: 0.03
   meleeStepSpeed: 10
@@ -4391,6 +4399,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 276346618}
     m_Modifications:
+    - target: {fileID: 3421184230293739801, guid: 5e9ca4d3fc8707a48921b4242eafb973, type: 3}
+      propertyPath: fallbackSmashX
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 3421184230293739802, guid: 5e9ca4d3fc8707a48921b4242eafb973, type: 3}
       propertyPath: m_RootOrder
       value: 7
@@ -5253,7 +5265,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -56, y: 162.5}
+  m_AnchoredPosition: {x: -56, y: 154.49377}
   m_SizeDelta: {x: 325, y: 325}
   m_Pivot: {x: 1, y: 1}
 --- !u!95 &1573296168
@@ -6289,7 +6301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1948785040
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6360,6 +6372,7 @@ GameObject:
   - component: {fileID: 1956656928}
   - component: {fileID: 1956656930}
   - component: {fileID: 1956656929}
+  - component: {fileID: 1956656931}
   m_Layer: 5
   m_Name: BOSS HPicon
   m_TagString: Untagged
@@ -6383,8 +6396,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 800, y: 450}
+  m_AnchoredPosition: {x: -19.8, y: -65}
+  m_SizeDelta: {x: 320, y: 320}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1956656929
 MonoBehaviour:
@@ -6406,7 +6419,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b33398148dc7da840a4c5362699ee984, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 90421346e9103834bb2bab50620563b6, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -6424,6 +6437,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1956656927}
   m_CullTransparentMesh: 1
+--- !u!95 &1956656931
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1956656927}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 6988cbdfeaf104f4b95d37df924424fe, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &1973922924
 GameObject:
   m_ObjectHideFlags: 0

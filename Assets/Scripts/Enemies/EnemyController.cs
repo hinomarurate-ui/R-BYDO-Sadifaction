@@ -358,6 +358,10 @@ public class EnemyController : MonoBehaviour
 
     void StopMovement()
     {
+        if(State == EnemyState.Dead){
+            return;
+        }
+        
         if(movement != null)
         {
             movement.Stop();

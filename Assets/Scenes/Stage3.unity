@@ -530,11 +530,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b56f5e2e84b840943a23d8edaf28447c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShotPoint: {fileID: 311783326}
-  BydoShot: {fileID: 8803905832848070896, guid: 60d7def66ae7a584b81da628165617a8, type: 3}
-  BulletSpeed: 35
-  ShotCooltime: 0.05
-  ShotS: {fileID: 8300000, guid: a0f1d8277d4f1954e8cf15668cc6b63d, type: 3}
+  shotPoint: {fileID: 311783326}
+  bulletPrefab: {fileID: 8803905832848070896, guid: 60d7def66ae7a584b81da628165617a8, type: 3}
+  bulletSpeed: 35
+  shotCooldown: 0.05
+  aimDeadzone: 0.2
+  shotSound: {fileID: 8300000, guid: a0f1d8277d4f1954e8cf15668cc6b63d, type: 3}
 --- !u!95 &153973864
 Animator:
   serializedVersion: 3
@@ -566,11 +567,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2613ad6fd3fa76458424702d8e4225e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 20
+  moveSpeed: 20
   gravity: 25
   jumpSpeed: 20
   jumpHeight: 5
-  ground: {fileID: 1469933838}
+  jumpReleaseSpeedMultiplier: 0.45
+  fallGravityMultiplier: 1.25
+  groundSensor: {fileID: 1469933838}
+  maxHP: 100
+  currentHP: 0
   colliderFriction: 0
   colliderBounciness: 0
   meleePoint: {fileID: 1716536696}
@@ -585,22 +590,20 @@ MonoBehaviour:
   meleeStepDeceleration: 40
   meleeKillShakePower: 0.16
   meleeKillShakeTime: 0.16
-  ClawS: {fileID: 8300000, guid: 60c5b73fe79445c4585afd512e5c8808, type: 3}
-  ClawSEnd: {fileID: 8300000, guid: 9a7dd337a0bf58243aca21d48e99e8f6, type: 3}
+  meleeStartSound: {fileID: 8300000, guid: 60c5b73fe79445c4585afd512e5c8808, type: 3}
+  meleeEndSound: {fileID: 8300000, guid: 9a7dd337a0bf58243aca21d48e99e8f6, type: 3}
   bydoClawRadius: 2
   bydoClawDamage: 5
   bydoClawCooltime: 1
   bydoClawHitDelay: 0.05
-  bydoClawStepSpeed: 15
   bydoClawShakePower: 0.3
   bydoClawShakeTime: 0.2
   bydoClawStartTime: 0.4
   bydoClawCount: 3
   bydoClawDistance: 3
-  bydoClawStepCooltime: 0.1
+  bydoClawStepDuration: 0.1
   bydoClawInterval: 0.3
-  bydoClawHit: 2
-  Charge: {fileID: 8300000, guid: 1e08f56678d61ed4db378379cc9a8f64, type: 3}
+  chargeSound: {fileID: 8300000, guid: 1e08f56678d61ed4db378379cc9a8f64, type: 3}
   bydoMissileCooltime: 0
   bydoMissileStartTime: 0.35
   bydoMissileCount: 8
@@ -612,7 +615,7 @@ MonoBehaviour:
   bydoMissilePrefab: {fileID: 5110615550490208247, guid: 928086a44dd981e4aa1ed0fd96d4df22, type: 3}
   bydoMissileChargeSprite: {fileID: 21300000, guid: 631da40a54a26174d898e285f8549092, type: 3}
   bydoMissileAttackSprite: {fileID: 21300000, guid: 22a550800fef8a647ba5389cbdbcb660, type: 3}
-  misairu: {fileID: 8300000, guid: 2bd587bce3966344b815f354ef2a60b1, type: 3}
+  missileLaunchSound: {fileID: 8300000, guid: 2bd587bce3966344b815f354ef2a60b1, type: 3}
 --- !u!50 &153973866
 Rigidbody2D:
   serializedVersion: 4
@@ -1080,8 +1083,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 351375485}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 123.221, y: -3.3017, z: 10}
-  m_LocalScale: {x: 23.886671, y: 3.0188, z: 1}
+  m_LocalPosition: {x: 123.221, y: -3.3017, z: 15}
+  m_LocalScale: {x: 23.886671, y: 3.0188, z: -10}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -1823,8 +1826,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 711014669}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 59.3, y: 6.8, z: 10}
-  m_LocalScale: {x: 10, y: 10, z: 1}
+  m_LocalPosition: {x: 66.3, y: 7.9, z: 10}
+  m_LocalScale: {x: 10, y: 10, z: -1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
