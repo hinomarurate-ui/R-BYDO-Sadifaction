@@ -14,6 +14,13 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     [SerializeField] AudioClip fallbackDamageSound;
     [SerializeField] AudioClip fallbackDeathSound;
 
+    [Header("Smash Ground Bounce")]
+    [SerializeField, Range(0f,1f)] float groundBounceRestitution = 0.65f;
+    [SerializeField, Range(0f,1f)] float groundBounceSlideMultiplier = 0.8f;
+    [SerializeField, Min(0f)] float groundBounceMinSpeed = 2f;
+    [SerializeField, Min(0)] int maxGroundBounces = 2;
+    [SerializeField, Min(0f)] float maxGroundBounceWait = 3f;
+
     EnemyController controller;
     Collider2D bodyCollider;
     Rigidbody2D body;
@@ -23,6 +30,10 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     int currentHealth;
     int maxHealth = 1;
     bool dead;
+    bool isSmashing;
+    bool waitingForGroundBounce;
+    int groundBounceCount;
+    float LastGroundBounceTime;
 
     public int CurrentHealth { get { return currentHealth; } }
     public int MaxHealth { get { return maxHealth; } }
@@ -193,8 +204,16 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         body.simulated = true;
         body.gravityScale = 1f;
         body.constraints = RigidbodyConstraints2D.None;
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        if(bodyCollider != null)
+        {
+            bodyCollider.isTrigger = false;
+        }
         body.velocity = Vector2.zero;
         body.angularVelocity = 0f;
+        isSmashing = true;
+        waitingForGroundBounce = maxGroundBounces > 0 && groundBounceRestitution > 0f;
 
         float dirX = 0f;
         if(request.Source != null)
@@ -223,8 +242,61 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         body.AddTorque(torque * (impulse.x >= 0f ? -1f : 1f), ForceMode2D.Impulse);
     }
 
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        TryBounce(collision);
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        TryBounce(collision);
+    }
+
+    void TryBounce(Collision2D collision)
+    {
+        if(!isSmashing || body == null || !collision.collider.CompareTag("Ground")
+            || groundBounceCount >= maxGroundBounces || LastGroundBounceTime == Time.fixedTime)
+            {
+                return;
+            }
+
+        Vector2 incomingVelocity = -collision.relativeVelocity;
+        for(int i = 0; i < collision.contactCount; i++)
+        {
+            Vector2 normal = collision.GetContact(i).normal;
+            float impactSpeed = -Vector2.Dot(incomingVelocity, normal);
+            if(impactSpeed <= 0f)
+            {
+                continue;
+            }
+
+            waitingForGroundBounce = false;
+            if(impactSpeed < groundBounceMinSpeed || groundBounceRestitution <= 0f)
+            {
+                return;
+            }
+
+            Vector2 surfaceVelocity = collision.rigidbody != null ? collision.rigidbody.velocity : Vector2.zero;;
+            Vector2 slideVelocity = incomingVelocity + normal * impactSpeed;
+            body.velocity = surfaceVelocity + slideVelocity * groundBounceSlideMultiplier
+                    + normal * impactSpeed * groundBounceRestitution;
+            groundBounceCount++;
+            LastGroundBounceTime = Time.fixedTime;
+            return;
+        }
+            
+    }
+
     IEnumerator Fadeout(float fadeTime)
     {
+
+        float waitElapsed = 0f;
+        while(waitingForGroundBounce && waitElapsed < maxGroundBounceWait)
+        {
+            yield return null;
+            waitElapsed += Time.deltaTime;
+        }
+        
         float elapsed = 0f;
         const float interval = 0.2f;
 
