@@ -315,6 +315,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ab1539157848144fb34906ced2abd70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  patrolSpeed: 1.5
+  patrolHalfWidth: 3
+  chaseSpeed: 4.5
+  searchRange: 10
+  bulletPrefab: {fileID: 3766476339654933344, guid: b7b065f7f78677d409d4bb5403131e7a, type: 3}
+  shotPoint: {fileID: 0}
+  tackleSpeed: 12
+  tackleDamage: 25
+  playerLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  spriteRenderer: {fileID: 4435991815434177053}
+  spriteFacesLeft: 1
+  an: {fileID: 4435991815434177062}
+  Atak: {fileID: 8300000, guid: 72fec0f84f502e1428ef9a10a540b269, type: 3}
+  Charge: {fileID: 0}
+  Shot: {fileID: 8300000, guid: a0f1d8277d4f1954e8cf15668cc6b63d, type: 3}
+  As: {fileID: 4435991815434177063}
 --- !u!114 &799682961759734691
 MonoBehaviour:
   m_ObjectHideFlags: 0

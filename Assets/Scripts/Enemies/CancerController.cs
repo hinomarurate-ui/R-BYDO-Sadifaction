@@ -38,6 +38,8 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
     bool Initialized;
     int attackVersion;
 
+    Coroutine turnRoutine;
+
     public EnemyAttackKind AttackKind { get; private set;}
 
     // Update is called once per frame
@@ -48,6 +50,8 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
         Initialized = true;
         body = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<Collider2D>();
+        if(an == null) an = GetComponent<Animator>();
+        if(shotPoint == null) shotPoint = transform.Find("ShotPoint");
         body.gravityScale = 0f;
         patrolCenter = body.position;
         moveTargetX = body.position.x;
@@ -59,7 +63,7 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
 
     void IEnemyRoutine.Tick()
     {
-        if(!enabled) return;
+        if(!enabled || attacking) return;
         if(player == null)
         {
             GameObject target = GameObject.FindWithTag("Player");
@@ -69,14 +73,15 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
         bool visible = player != null && player.gameObject.activeInHierarchy && player.CurrentHP > 0
             && Vector2.Distance(body.position, player.transform.position) <= range;
             visible = visible && (player.transform.position.x - body.position.x) * facingX > 0f;
-        if(visible == foundPlayer) return;
+        if(foundPlayer == !visible) return;
 
         foundPlayer = visible;
         Stop();
-        waitTime = Time.time + 0.55f;
+        waitTime = Time.time + 0.65f;
         if(foundPlayer)
         {
             Face(player.transform.position.x - body.position.x);
+            if(an != null) an.SetTrigger("FInd");
             nextAttackTime = waitTime + 2f;
         }
         else patrolCenter = body.position;
@@ -85,14 +90,22 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
     IEnumerator WaitAnim(float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
-        Debug.Log("ちくわ");
+        turnRoutine = null;
+        if(!enabled || foundPlayer || !enemy.CanAct) yield break;
+        Face(-facingX);
+        if(an != null) an.SetBool("Search", false);
+    }
+
+    void LateUpdate()
+    {
+        if(an != null && enemy != null) an.SetBool("Damage", enemy.State == EnemyState.HitStun);
     }
 
     public bool Tick()
     {
         moveSpeed = 0f;
-        if(!enabled || Time.time < waitTime) return false;
-        an.SetBool("Search", false);
+        if(!enabled || Time.time < waitTime|| turnRoutine != null) return false;
+        if(an != null) an.SetBool("Search", false);
         if(foundPlayer)
         {
             float difference = player.transform.position.x - body.position.x;
@@ -106,9 +119,9 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
             moveTargetX = patrolCenter.x + facingX * patrolHalfWidth;
             if(Mathf.Abs(moveTargetX - body.position.x) < 0.02f)
             {
-                an.SetBool("Search", true);
+                if(an != null)an.SetBool("Search", true);
                 waitTime = Time.time + 2.5f;
-                Face(-facingX);
+                turnRoutine = StartCoroutine(WaitAnim(2.5f));
                 
                 return false;
             }
@@ -128,7 +141,8 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
 
     public bool CanAttack()
     {
-        if(!enabled || !foundPlayer || !enemy.CanAct || Time.time < nextAttackTime) return false;
+        if(!enabled || !foundPlayer ||player == null || !player.gameObject.activeInHierarchy 
+            || player.CurrentHP <= 0 || !enemy.CanAct || Time.time < nextAttackTime) return false;
         float distance = Vector2.Distance(body.position, player.transform.position);
         if(distance <= 3.5f && Time.time >= nextTackleTime)
         {
@@ -151,15 +165,18 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
         yield return Wait(tackle ? 0.4f : 0.35f, version);
         if(AttackIsActivate(version))
         {
-            if(tackle) yield return Tackle(version);
+            if(tackle){ 
+            yield return Tackle(version);
+            if(AttackIsActivate(version)) enemy.Animation.EndAttack(AttackKind);
+            }
             else
             {
-                Vector3 point = shotPoint.localPosition;
-                point.x = -Mathf.Abs(point.x);
-                FanShotAttackPattern.Shoot(bulletPrefab, transform.TransformPoint(point),
+                Vector3 point = shotPoint != null ? shotPoint.position : transform.position;
+                FanShotAttackPattern.Shoot(bulletPrefab, point,
                 Vector2.right * facingX, 1, 0f, 7f, 4f, 15);
             }
-            yield return Wait(tackle ? 0.5f : 0.45f, version);
+
+            yield return Wait(tackle ? 0.5f : 0.65f, version);
         }
         if(version == attackVersion) Cancel();
         
@@ -215,6 +232,17 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
     public void Stop()
     {
         moveSpeed = 0f;
+        if(turnRoutine != null)
+        {
+            StopCoroutine(turnRoutine);
+            turnRoutine = null;
+        }
+        if(an != null)
+        {
+            an.SetBool("Search", false);
+            an.SetBool("Damage", enemy != null && enemy.State == EnemyState.HitStun);
+            an.ResetTrigger("Find");
+        }
         if(body != null && !enemy.IsDead) body.velocity = Vector2.zero;
         if(attacking) Cancel();
         
@@ -233,7 +261,6 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
 
     void Face(float direction)
     {
-        StartCoroutine(WaitAnim(2.5f));
         if(Mathf.Abs(direction) < 0.01f) return;
         facingX = Mathf.Sign(direction);
         Vector3 scale = transform.localScale;
