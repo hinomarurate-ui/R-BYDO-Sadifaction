@@ -73,7 +73,7 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
         bool visible = player != null && player.gameObject.activeInHierarchy && player.CurrentHP > 0
             && Vector2.Distance(body.position, player.transform.position) <= range;
             visible = visible && (player.transform.position.x - body.position.x) * facingX > 0f;
-        if(foundPlayer == !visible) return;
+        if(foundPlayer || !visible) return;
 
         foundPlayer = visible;
         Stop();
@@ -81,7 +81,7 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
         if(foundPlayer)
         {
             Face(player.transform.position.x - body.position.x);
-            if(an != null) an.SetTrigger("FInd");
+            if(an != null) an.SetTrigger("Find");
             nextAttackTime = waitTime + 2f;
         }
         else patrolCenter = body.position;
@@ -108,6 +108,7 @@ public class CancerController : MonoBehaviour, IEnemyMovement, IEnemyAttackPatte
         if(an != null) an.SetBool("Search", false);
         if(foundPlayer)
         {
+            if(player == null || !player.gameObject.activeInHierarchy || player.CurrentHP <= 0) return false;
             float difference = player.transform.position.x - body.position.x;
             Face(difference);
             if(Mathf.Abs(difference) <= 0.75f) return false;
