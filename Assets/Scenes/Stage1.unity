@@ -6686,7 +6686,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: bb74717a83fdd5044a96c496aeaf2cbd, type: 3}
     - target: {fileID: 7274866251674149783, guid: e444922afb984ee4cb6ee5036ac5abc2, type: 3}
       propertyPath: diveSpeed
-      value: 35
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7274866251674149783, guid: e444922afb984ee4cb6ee5036ac5abc2, type: 3}
       propertyPath: shotPoint
@@ -6694,7 +6694,7 @@ PrefabInstance:
       objectReference: {fileID: 1742432171}
     - target: {fileID: 7274866251674149783, guid: e444922afb984ee4cb6ee5036ac5abc2, type: 3}
       propertyPath: chargeTime
-      value: 1.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7274866251674149783, guid: e444922afb984ee4cb6ee5036ac5abc2, type: 3}
       propertyPath: BlastObject
@@ -13478,11 +13478,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4435991815434177050, guid: ed5f43501696fae45a5c2f4de0efd7f1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 72.27
+      value: 118.6
       objectReference: {fileID: 0}
     - target: {fileID: 4435991815434177050, guid: ed5f43501696fae45a5c2f4de0efd7f1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.5
+      value: -2.08
       objectReference: {fileID: 0}
     - target: {fileID: 4435991815434177050, guid: ed5f43501696fae45a5c2f4de0efd7f1, type: 3}
       propertyPath: m_LocalPosition.z
