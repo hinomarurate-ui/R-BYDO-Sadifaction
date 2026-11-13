@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
+public class ScantController : EnemyBehaviourBase, IEnemyMovement, IEnemyAttackPattern
 {
     [Header("Hover Movement")]
     [SerializeField] float hoverMoveSpeed = 3.5f;
@@ -49,93 +49,73 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
 
     readonly HashSet<IDamageable> diveHits = new HashSet<IDamageable>();
 
-    EnemyController enemy;
-    Transform player;
-    Rigidbody2D body;
     Vector2 hoverCenter;
     Vector2 hoverTarget;
     float hoverOffsetX;
     float nextAttackTime;
     bool nextAttackIsDive;
-    bool initialized;
     EnemyAttackKind selectedAttackKind = EnemyAttackKind.None;
 
     public EnemyAttackKind AttackKind { get { return selectedAttackKind; } }
 
-    public void Initialize(EnemyController controller)
+    protected override void OnInitialized()
     {
-        enemy = controller;
-        player = controller != null ? controller.Target : null;
-        body = GetComponent<Rigidbody2D>();
-
         if(spriteRenderer == null)
         {
-            spriteRenderer = GetComponent<SpriteRenderer>();
+            spriteRenderer = CachedSpriteRenderer;
         }
 
-        if(!initialized)
-        {
-            initialized = true;
-            hoverCenter = body != null ? body.position : (Vector2)transform.position;
-            hoverTarget = hoverCenter;
-            hoverOffsetX = 0f;
-            nextAttackTime = Time.time + openingDelay;
-        }
-        
-        
+        if(an == null) an = CachedAnimator;
+        if(As == null) As = CachedAudioSource;
+        hoverCenter = Body != null ? Body.position : (Vector2)transform.position;
+        hoverTarget = hoverCenter;
+        hoverOffsetX = 0f;
+        nextAttackTime = Time.time + openingDelay;
     }
 
     public bool Tick()
     {
-        if(enemy == null || enemy.IsDead)
+        if(Enemy == null || Enemy.IsDead)
         {
             return false;
         }
 
-        if(player == null)
-        {
-            player = enemy.Target;
-        }
-
-        float targetX = player != null ? player.position.x + hoverOffsetX : hoverCenter.x;
+        float targetX = Target != null ? Target.position.x + hoverOffsetX : hoverCenter.x;
         targetX = Mathf.Clamp(targetX, hoverCenter.x - horizontalRange, hoverCenter.x + horizontalRange);
         float targetY = hoverCenter.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
         hoverTarget = new Vector2(targetX,targetY);
 
         FacePlayer();
 
-        Vector2 currentPosition = body != null ? body.position : (Vector2)transform.position;
+        Vector2 currentPosition = Body != null ? Body.position : (Vector2)transform.position;
         return Vector2.Distance(currentPosition, hoverTarget) > 0.05f;
     }
 
     public void FixedTick()
     {
-        if(body == null)
+        if(Body == null)
         {
             return;
         }
 
-        Vector2 difference = hoverTarget - body.position;
-        body.velocity = Vector2.ClampMagnitude(difference * 3f, hoverMoveSpeed);
+        Vector2 difference = hoverTarget - Body.position;
+        Body.velocity = Vector2.ClampMagnitude(difference * 3f, hoverMoveSpeed);
     }
 
     public void Stop()
     {
-        if(body != null)
-        {
-            body.velocity = Vector2.zero;
-        }
+        StopBodyVelocity();
     }
 
     public bool CanAttack()
     {
-        if(player == null || enemy == null || enemy.IsDead || Time.time < nextAttackTime)
+        if(Target == null || Enemy == null || Enemy.IsDead || Time.time < nextAttackTime)
         {
             selectedAttackKind = EnemyAttackKind.None;
             return false;
         }
 
-        if(Vector2.Distance(transform.position, player.position) > searchRange)
+        if(Vector2.Distance(transform.position, Target.position) > searchRange)
         {
             selectedAttackKind = EnemyAttackKind.None;
             return false;
@@ -178,12 +158,12 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
         an.SetBool("ShotMode", true);
         an.SetBool("ShotStop", true);
 
-        if(player == null)
+        if(Target == null)
         {
             yield break;
         }
 
-        yield return MoveToPoint(new Vector2(transform.position.x, player.position.y + 0.35f), returnSpeed, false);
+        yield return MoveToPoint(new Vector2(transform.position.x, Target.position.y + 0.35f), returnSpeed, false);
         
 
 
@@ -200,15 +180,15 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
         int volleys = Mathf.Max(1, volleyCount);
         for(int i = 0; i < volleys; i++)
         {
-            if(player == null)
+            if(Target == null)
             {
                 yield break;
             }
 
             Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
-            Vector2 direction = player.position.x > transform.position.x ? Vector2.right : Vector2.left;
+            Vector2 direction = Target.position.x > transform.position.x ? Vector2.right : Vector2.left;
             Vector3 Blastposition = Blast.transform.localPosition;
-            Blastposition.x = player.position.x > transform.position.x ? Mathf.Abs(Blastposition.x): -Mathf.Abs(Blastposition.x);
+            Blastposition.x = Target.position.x > transform.position.x ? Mathf.Abs(Blastposition.x): -Mathf.Abs(Blastposition.x);
 
             
             Blast.transform.localPosition = Blastposition;
@@ -240,14 +220,14 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
 
     IEnumerator RunDiveAttack()
     {
-        if(player == null)
+        if(Target == null)
         {
             yield break;
         }
 
         an.SetBool("Attack", true);
-        Vector2 returnPoint = body != null ? body.position : (Vector2)transform.position;
-        Vector2 playerPoint = (Vector2)player.position + Vector2.up * 0.35f;
+        Vector2 returnPoint = Body != null ? Body.position : (Vector2)transform.position;
+        Vector2 playerPoint = (Vector2)Target.position + Vector2.up * 0.35f;
         diveHits.Clear();
         yield return MoveToPoint(new Vector2(returnPoint.x, playerPoint.y), returnSpeed, false);
         Vector2 diveTarget = new Vector2(playerPoint.x + (returnPoint.x < playerPoint.x ? divePastDistance : -divePastDistance), playerPoint.y);
@@ -268,7 +248,7 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
 
         Vector2 oppositeHoverPoint = new Vector2(diveTarget.x, returnPoint.y);
         yield return MoveToPoint(oppositeHoverPoint, returnSpeed, false);
-        hoverOffsetX = player != null ? diveTarget.x - player.position.x : 0f;
+        hoverOffsetX = Target != null ? diveTarget.x - Target.position.x : 0f;
         hoverCenter = oppositeHoverPoint;
         hoverTarget = hoverCenter;
         an.SetBool("Attack", false);
@@ -283,9 +263,9 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
         while(Vector2.Distance(CurrentPosition(), target) > arriveDistance && remainingTime > 0f)
         {
             Vector2 nextPosition = Vector2.MoveTowards(CurrentPosition(), target, safeSpeed * Time.fixedDeltaTime);
-            if(body != null)
+            if(Body != null)
             {
-                body.MovePosition(nextPosition);
+                Body.MovePosition(nextPosition);
             }
             else
             {
@@ -323,17 +303,17 @@ public class ScantController : MonoBehaviour, IEnemyMovement,IEnemyAttackPattern
 
     Vector2 CurrentPosition()
     {
-        return body != null ? body.position : (Vector2)transform.position;
+        return Body != null ? Body.position : (Vector2)transform.position;
     }
 
     void FacePlayer()
     {
-        if(spriteRenderer == null || player == null)
+        if(spriteRenderer == null || Target == null)
         {
             return;
         }
 
-        bool playerIsRight = player.position.x > transform.position.x;
+        bool playerIsRight = Target.position.x > transform.position.x;
         spriteRenderer.flipX = spriteFacesLeft ? playerIsRight : !playerIsRight;
     }
 

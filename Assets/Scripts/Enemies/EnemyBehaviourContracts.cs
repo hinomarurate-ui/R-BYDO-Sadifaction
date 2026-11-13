@@ -1,24 +1,26 @@
 using System.Collections;
 
-public interface IEnemyMovement
+public interface IEnemyBehaviour
 {
     void Initialize(EnemyController controller);
+}
+
+public interface IEnemyMovement : IEnemyBehaviour
+{
     bool Tick();
     void FixedTick();
     void Stop();
 }
 
-public interface IEnemyAttackPattern
+public interface IEnemyAttackPattern : IEnemyBehaviour
 {
     EnemyAttackKind AttackKind { get; }
-    void Initialize(EnemyController controller);
     bool CanAttack();
     IEnumerator Attack();
     void Cancel();
 }
 
-public interface IEnemyRoutine
+public interface IEnemyRoutine : IEnemyBehaviour
 {
-    void Initialize(EnemyController controller);
     void Tick();
 }

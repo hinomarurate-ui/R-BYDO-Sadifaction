@@ -253,10 +253,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e538b32b4cf3412587b08aa6875a647d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 0}
+  definition: {fileID: 11400000, guid: b460fcba93c7f994fb5ee2558f3b344e, type: 2}
   groundSensor: {fileID: 0}
   ledgeSensor: {fileID: 5950868178775476162}
-  fallbackDefinition: {fileID: 11400000, guid: b460fcba93c7f994fb5ee2558f3b344e, type: 2}
   health: {fileID: 5950868178451081482}
   movementOverride: {fileID: 0}
   isGroundedDebug: 0
@@ -411,8 +410,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemy: {fileID: 0}
-  enemyMove: {fileID: 0}
-  enemyAttack: {fileID: 0}
   enemyHP: {fileID: 0}
   bodyCollider: {fileID: 0}
   bodyRigidbody: {fileID: 0}
@@ -429,7 +426,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41423643b06d445d8fab70b65fcdee1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useDefinitionSettings: 0
   bulletPrefab: {fileID: 6805678355545977460, guid: 02743ff1d2f0fc24793f94024564bc00, type: 3}
   shotPoint: {fileID: 5950868177569004054}
   searchRange: 8

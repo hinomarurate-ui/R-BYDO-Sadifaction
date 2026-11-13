@@ -5,13 +5,13 @@ using UnityEngine.Serialization;
 
 public class EnemyController : MonoBehaviour
 {
+    [FormerlySerializedAs("Status")]
+    [FormerlySerializedAs("fallbackDefinition")]
     [SerializeField] EnemyDefinition definition;
     [FormerlySerializedAs("ground")]
     [SerializeField] GroundSensor groundSensor;
     [FormerlySerializedAs("gake")]
     [SerializeField] LedgeSensor ledgeSensor;
-    [FormerlySerializedAs("Status")]
-    [SerializeField] EnemyDefinition fallbackDefinition;
     [FormerlySerializedAs("HP")]
     [SerializeField] EnemyHealth health;
     [FormerlySerializedAs("Move")]
@@ -24,6 +24,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] bool isAtLedgeDebug;
 
     readonly EnemySensor sensor = new EnemySensor();
+    readonly List<IEnemyBehaviour> behaviours = new List<IEnemyBehaviour>();
     readonly List<IEnemyAttackPattern> attackPatterns = new List<IEnemyAttackPattern>();
     readonly List<IEnemyRoutine> routines = new List<IEnemyRoutine>();
 
@@ -143,9 +144,7 @@ public class EnemyController : MonoBehaviour
         }
 
         ResolveTarget();
-        ResolveMovement();
-        ResolveAttackPatterns();
-        ResolveRoutines();
+        ResolveBehaviours();
         RefreshSensorState();
 
         if(State != EnemyState.Dead)
@@ -162,15 +161,13 @@ public class EnemyController : MonoBehaviour
         }
 
         initialized = true;
-        Definition = definition != null ? definition : fallbackDefinition;
+        Definition = definition;
         sensor.Initialize(transform, groundSensor, ledgeSensor);
         animationDriver = new EnemyAnimationDriver(GetComponent<Animator>(), Definition);
 
         ResolveTarget();
         ResolveHealth();
-        ResolveMovement();
-        ResolveAttackPatterns();
-        ResolveRoutines();
+        ResolveBehaviours();
         RefreshSensorState();
     }
 
@@ -193,64 +190,43 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    void ResolveMovement()
+    void ResolveBehaviours()
     {
-        movement = movementOverride as IEnemyMovement;
-        if(movement == null)
-        {
-            movement = FindBehaviour<IEnemyMovement>();
-        }
-
-        if(movement != null)
-        {
-            movement.Initialize(this);
-        }
-    }
-
-    void ResolveAttackPatterns()
-    {
+        behaviours.Clear();
         attackPatterns.Clear();
-
-        foreach(MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
-        {
-            if(behaviour is IEnemyAttackPattern attackPattern)
-            {
-                attackPattern.Initialize(this);
-                attackPatterns.Add(attackPattern);
-            }
-        }
-    }
-
-    void ResolveRoutines()
-    {
         routines.Clear();
+        movement = null;
 
-        foreach(MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
+        foreach(MonoBehaviour component in GetComponents<MonoBehaviour>())
         {
-            if(behaviour is IEnemyRoutine routine)
-            {
-                routine.Initialize(this);
-                routines.Add(routine);
-            }
-        }
-    }
-
-    T FindBehaviour<T>() where T : class
-    {
-        foreach(MonoBehaviour behaviour in GetComponents<MonoBehaviour>())
-        {
-            if(behaviour == this)
+            if(!(component is IEnemyBehaviour behaviour))
             {
                 continue;
             }
 
-            if(behaviour is T candidate)
+            behaviour.Initialize(this);
+            behaviours.Add(behaviour);
+
+            if(component is IEnemyMovement movementCandidate && movement == null)
             {
-                return candidate;
+                movement = movementCandidate;
+            }
+
+            if(component is IEnemyAttackPattern attackPattern)
+            {
+                attackPatterns.Add(attackPattern);
+            }
+
+            if(component is IEnemyRoutine routine)
+            {
+                routines.Add(routine);
             }
         }
 
-        return null;
+        if(movementOverride is IEnemyMovement overrideMovement)
+        {
+            movement = overrideMovement;
+        }
     }
 
     void RefreshSensorState()

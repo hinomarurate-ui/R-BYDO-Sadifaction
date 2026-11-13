@@ -3,8 +3,6 @@
 public class EnemyActivator : MonoBehaviour
 {
     [SerializeField] EnemyController enemy;
-    [SerializeField] MonoBehaviour enemyMove;
-    [SerializeField] MonoBehaviour enemyAttack;
     [SerializeField] EnemyHealth enemyHP;
     [SerializeField] Collider2D bodyCollider;
     [SerializeField] Rigidbody2D bodyRigidbody;
@@ -15,8 +13,6 @@ public class EnemyActivator : MonoBehaviour
     void Awake()
     {
         enemy = GetComponent<EnemyController>();
-        enemyMove = FindBehaviour<IEnemyMovement>();
-        enemyAttack = FindBehaviour<IEnemyAttackPattern>();
         enemyHP = GetComponent<EnemyHealth>();
         bodyCollider = GetComponent<Collider2D>();
         bodyRigidbody = GetComponent<Rigidbody2D>();
@@ -84,20 +80,6 @@ public class EnemyActivator : MonoBehaviour
         }
     }
 
-    MonoBehaviour FindBehaviour<T>()
-    {
-        MonoBehaviour[] behaviours = GetComponents<MonoBehaviour>();
-        for(int i = 0; i < behaviours.Length; i++)
-        {
-            if(behaviours[i] is T)
-            {
-                return behaviours[i];
-            }
-        }
-
-        return null;
-    }
-
     MonoBehaviour[] CollectControlledBehaviours()
     {
         var behaviours = new System.Collections.Generic.List<MonoBehaviour>();
@@ -113,9 +95,7 @@ public class EnemyActivator : MonoBehaviour
 
             if(behaviour is EnemyController
                 || behaviour is EnemyHealth
-                || behaviour is IEnemyMovement
-                || behaviour is IEnemyAttackPattern
-                || behaviour is IEnemyRoutine)
+                || behaviour is IEnemyBehaviour)
             {
                 behaviours.Add(behaviour);
             }

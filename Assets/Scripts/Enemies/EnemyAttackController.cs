@@ -2,12 +2,10 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class EnemyAttackController : MonoBehaviour, IEnemyAttackPattern
+public class EnemyAttackController : EnemyBehaviourBase, IEnemyAttackPattern
 {
-    [SerializeField] protected bool useDefinitionSettings = true;
     [SerializeField] protected GameObject bulletPrefab;
     [SerializeField] protected Transform shotPoint;
-    [SerializeField] protected EnemyController enemy;
     [SerializeField] protected float searchRange = 8f;
     [FormerlySerializedAs("attackCooltime")]
     [SerializeField] protected float attackCooldown = 2f;
@@ -32,34 +30,20 @@ public class EnemyAttackController : MonoBehaviour, IEnemyAttackPattern
     [SerializeField] protected LayerMask playerLayers;
     [SerializeField] protected Transform meleePoint;
 
-    protected Transform player;
-    protected Rigidbody2D body;
     protected float lastAttackTime = -999f;
     protected EnemyAttackKind selectedAttackKind = EnemyAttackKind.None;
 
     public EnemyAttackKind AttackKind { get { return selectedAttackKind; } }
 
-    public virtual void Initialize(EnemyController controller)
-    {
-        enemy = controller;
-        body = GetComponent<Rigidbody2D>();
-        player = controller != null ? controller.Target : null;
-
-        if(useDefinitionSettings)
-        {
-            ApplyDefinition(controller != null ? controller.Definition : null);
-        }
-    }
-
     public virtual bool CanAttack()
     {
-        if(player == null || enemy == null || !enemy.IsGrounded || Time.time < lastAttackTime + attackCooldown)
+        if(Target == null || Enemy == null || !Enemy.IsGrounded || Time.time < lastAttackTime + attackCooldown)
         {
             selectedAttackKind = EnemyAttackKind.None;
             return false;
         }
 
-        float distance = Vector2.Distance(transform.position, player.position);
+        float distance = Vector2.Distance(transform.position, Target.position);
         if(useMeleeAttack && distance <= meleeSearchRange)
         {
             selectedAttackKind = EnemyAttackKind.Melee;
@@ -79,7 +63,7 @@ public class EnemyAttackController : MonoBehaviour, IEnemyAttackPattern
     public virtual IEnumerator Attack()
     {
         lastAttackTime = Time.time;
-        StopBodyVelocity();
+        StopBodyVelocity(true);
 
         if(selectedAttackKind == EnemyAttackKind.Melee)
         {
@@ -102,13 +86,13 @@ public class EnemyAttackController : MonoBehaviour, IEnemyAttackPattern
 
     protected virtual void ShootFan()
     {
-        if(player == null)
+        if(Target == null)
         {
             return;
         }
 
         Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
-        Vector2 targetPosition = player.position + Vector3.up * aimHeight;
+        Vector2 targetPosition = Target.position + Vector3.up * aimHeight;
         Vector2 baseDirection = (targetPosition - (Vector2)origin).normalized;
         FanShotAttackPattern.Shoot(bulletPrefab, origin, baseDirection, bulletCount, bulletAngleSpacing, bulletSpeed, bulletLifeTime, bulletDamage);
     }
@@ -119,49 +103,4 @@ public class EnemyAttackController : MonoBehaviour, IEnemyAttackPattern
         MeleeAttackPattern.Hit(origin, meleeRadius, playerLayers, meleeDamage);
     }
 
-    protected virtual void ApplyDefinition(EnemyDefinition definition)
-    {
-        if(definition == null || definition.Attack == null)
-        {
-            return;
-        }
-
-        EnemyDefinition.AttackSettings settings = definition.Attack;
-        searchRange = settings.searchRange;
-        attackCooldown = settings.attackCooldown;
-        shotChargeTime = settings.chargeTime;
-        attackEndTime = settings.endTime;
-        bulletSpeed = settings.bulletSpeed;
-        bulletLifeTime = settings.bulletLifeTime;
-        bulletDamage = settings.bulletDamage;
-        bulletCount = settings.bulletCount;
-        bulletAngleSpacing = settings.bulletAngleSpacing;
-        aimHeight = settings.aimHeight;
-        useMeleeAttack = settings.useMeleeAttack;
-        meleeChargeTime = settings.meleeChargeTime;
-        meleeSearchRange = settings.meleeSearchRange;
-        meleeRadius = settings.meleeRadius;
-        meleeDamage = settings.meleeDamage;
-
-        if(playerLayers.value == 0)
-        {
-            playerLayers = settings.playerLayers;
-        }
-    }
-
-    protected void StopBodyVelocity()
-    {
-        if(body != null)
-        {
-            body.velocity = new Vector2(0f, body.velocity.y);
-        }
-    }
-
-    static IEnumerator WaitIfPositive(float duration)
-    {
-        if(duration > 0f)
-        {
-            yield return new WaitForSeconds(duration);
-        }
-    }
 }

@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
+public class GroundPatrolMovement : EnemyBehaviourBase, IEnemyMovement
 {
     const string GroundTag = "Ground";
 
-    [SerializeField] protected bool useDefinitionSettings = true;
     [FormerlySerializedAs("MoveSpeed")]
     [SerializeField] protected float moveSpeed = 2f;
     [FormerlySerializedAs("Dirx")]
     [SerializeField] protected float directionX = -1f;
-    [SerializeField] protected EnemyController enemy;
     [FormerlySerializedAs("JumpImpulse")]
     [SerializeField] protected float jumpImpulse = 5f;
     [FormerlySerializedAs("JumpPower")]
@@ -21,9 +19,8 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
     [SerializeField] protected float jumpSlowHeight = 2f;
     [FormerlySerializedAs("MaxHeight")]
     [SerializeField] protected float maxJumpHeight = 0.7f;
-
-    protected Rigidbody2D body;
-    protected EnemyAnimationDriver animationDriver;
+    [SerializeField] protected float jumpChargeTime = 0.5f;
+    [SerializeField] protected float postJumpLockTime = 0.3f;
 
     float jumpStartY;
     bool isJumping;
@@ -33,17 +30,8 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
     Coroutine jumpChargeRoutine;
     readonly HashSet<Collider2D> bodyGroundContacts = new HashSet<Collider2D>();
 
-    public virtual void Initialize(EnemyController controller)
+    protected override void OnInitialized()
     {
-        enemy = controller;
-        body = GetComponent<Rigidbody2D>();
-        animationDriver = controller != null ? controller.Animation : null;
-
-        if(useDefinitionSettings)
-        {
-            ApplyDefinition(controller != null ? controller.Definition : null);
-        }
-
         isChargingJump = false;
         isJumping = false;
         leftGroundAfterJump = false;
@@ -52,13 +40,13 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
     public virtual bool Tick()
     {
-        if(enemy == null || body == null)
+        if(Enemy == null || Body == null)
         {
             return false;
         }
 
-        bool isGrounded = enemy.IsGrounded || IsBodyGrounded();
-        bool isAtLedge = enemy.IsAtLedge;
+        bool isGrounded = Enemy.IsGrounded || IsBodyGrounded();
+        bool isAtLedge = Enemy.IsAtLedge;
 
         RefreshJumpState(isGrounded);
 
@@ -80,12 +68,12 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
     public virtual void FixedTick()
     {
-        if(!isJumping || !isApplyingJumpAssist || body == null)
+        if(!isJumping || !isApplyingJumpAssist || Body == null)
         {
             return;
         }
 
-        if(body.velocity.y <= 0f)
+        if(Body.velocity.y <= 0f)
         {
             isApplyingJumpAssist = false;
             return;
@@ -94,30 +82,26 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         float minHeight = jumpStartY + Mathf.Min(jumpSlowHeight, maxJumpHeight);
         float maxHeight = jumpStartY + Mathf.Max(jumpSlowHeight, maxJumpHeight);
 
-        if(body.position.y < minHeight)
+        if(Body.position.y < minHeight)
         {
-            body.AddForce(Vector2.up * jumpPower, ForceMode2D.Force);
+            Body.AddForce(Vector2.up * jumpPower, ForceMode2D.Force);
         }
-        else if(body.position.y < maxHeight)
+        else if(Body.position.y < maxHeight)
         {
-            float heightRate = Mathf.InverseLerp(minHeight, maxHeight, body.position.y);
+            float heightRate = Mathf.InverseLerp(minHeight, maxHeight, Body.position.y);
             float thrust = Mathf.Lerp(jumpPower, 0f, heightRate);
-            body.AddForce(Vector2.up * thrust, ForceMode2D.Force);
+            Body.AddForce(Vector2.up * thrust, ForceMode2D.Force);
         }
         else
         {
             isApplyingJumpAssist = false;
-            body.velocity = new Vector2(body.velocity.x, Mathf.Min(body.velocity.y, 0f));
+            Body.velocity = new Vector2(Body.velocity.x, Mathf.Min(Body.velocity.y, 0f));
         }
     }
 
     public virtual void Stop()
     {
-        if(body != null)
-        {
-            body.velocity = new Vector2(0f, body.velocity.y);
-        }
-
+        StopBodyVelocity(true);
         SetWalk(false);
     }
 
@@ -125,18 +109,18 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
     {
         SetJump(false);
         SetWalk(true);
-        body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+        Body.velocity = new Vector2(direction * moveSpeed, Body.velocity.y);
     }
 
     protected virtual void MoveAirborneX(float direction)
     {
         SetWalk(false);
-        body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+        Body.velocity = new Vector2(direction * moveSpeed, Body.velocity.y);
     }
 
     protected virtual void Jump(float direction)
     {
-        if(body == null)
+        if(Body == null)
         {
             return;
         }
@@ -144,17 +128,17 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         isJumping = true;
         leftGroundAfterJump = false;
         isApplyingJumpAssist = true;
-        jumpStartY = body.position.y;
+        jumpStartY = Body.position.y;
         SetWalk(false);
         SetJump(true);
         SetJumpCharge(false);
-        body.AddForce(Vector2.up * jumpImpulse, ForceMode2D.Impulse);
-        body.velocity = new Vector2(direction * moveSpeed, body.velocity.y);
+        Body.AddForce(Vector2.up * jumpImpulse, ForceMode2D.Impulse);
+        Body.velocity = new Vector2(direction * moveSpeed, Body.velocity.y);
     }
 
     protected virtual IEnumerator JumpCharge()
     {
-        if(body == null || enemy == null)
+        if(Body == null || Enemy == null)
         {
             yield break;
         }
@@ -162,17 +146,16 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         SetWalk(false);
         isChargingJump = true;
         SetJumpCharge(true);
-        body.velocity = new Vector2(0f, body.velocity.y);
+        Body.velocity = new Vector2(0f, Body.velocity.y);
 
-        float chargeTime = CurrentGroundPatrolSettings().jumpChargeTime;
-        if(chargeTime > 0f)
+        if(jumpChargeTime > 0f)
         {
-            yield return new WaitForSeconds(chargeTime);
+            yield return new WaitForSeconds(jumpChargeTime);
         }
 
         isChargingJump = false;
 
-        if(!enemy.IsAtLedge)
+        if(!Enemy.IsAtLedge)
         {
             SetJumpCharge(false);
             jumpChargeRoutine = null;
@@ -181,29 +164,12 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
         Jump(directionX);
 
-        float postJumpLock = CurrentGroundPatrolSettings().postJumpLockTime;
-        if(postJumpLock > 0f)
+        if(postJumpLockTime > 0f)
         {
-            yield return new WaitForSeconds(postJumpLock);
+            yield return new WaitForSeconds(postJumpLockTime);
         }
 
         jumpChargeRoutine = null;
-    }
-
-    protected virtual void ApplyDefinition(EnemyDefinition definition)
-    {
-        if(definition == null || definition.GroundPatrol == null)
-        {
-            return;
-        }
-
-        EnemyDefinition.GroundPatrolSettings settings = definition.GroundPatrol;
-        moveSpeed = settings.moveSpeed;
-        directionX = settings.directionX;
-        jumpImpulse = settings.jumpImpulse;
-        jumpPower = settings.jumpPower;
-        jumpSlowHeight = settings.jumpSlowHeight;
-        maxJumpHeight = settings.maxJumpHeight;
     }
 
     void StartJumpChargeIfNeeded()
@@ -227,7 +193,7 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
             return;
         }
 
-        if(leftGroundAfterJump && body.velocity.y <= 0.01f)
+        if(leftGroundAfterJump && Body.velocity.y <= 0.01f)
         {
             FinishJump();
         }
@@ -288,7 +254,7 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
 
     void TryFinishJumpFromGroundCollision(Collision2D collision)
     {
-        if(isJumping && body != null && body.velocity.y <= 0.01f && IsGroundCollision(collision))
+        if(isJumping && Body != null && Body.velocity.y <= 0.01f && IsGroundCollision(collision))
         {
             FinishJump();
         }
@@ -312,46 +278,38 @@ public class GroundPatrolMovement : MonoBehaviour, IEnemyMovement
         return false;
     }
 
-    EnemyDefinition.GroundPatrolSettings CurrentGroundPatrolSettings()
-    {
-        if(enemy != null && enemy.Definition != null && enemy.Definition.GroundPatrol != null)
-        {
-            return enemy.Definition.GroundPatrol;
-        }
-
-        return new EnemyDefinition.GroundPatrolSettings();
-    }
-
     protected void SetWalk(bool value)
     {
-        if(animationDriver != null)
+        if(Enemy != null && Enemy.Animation != null)
         {
-            animationDriver.ApplyState(value ? EnemyState.Move : EnemyState.Idle);
+            Enemy.Animation.ApplyState(value ? EnemyState.Move : EnemyState.Idle);
         }
     }
 
     protected void SetJump(bool value)
     {
-        if(animationDriver != null)
+        if(Enemy != null && Enemy.Animation != null)
         {
-            animationDriver.SetJump(value);
+            Enemy.Animation.SetJump(value);
         }
     }
 
     protected void SetJumpCharge(bool value)
     {
-        if(animationDriver != null)
+        if(Enemy != null && Enemy.Animation != null)
         {
-            animationDriver.SetJumpCharge(value);
+            Enemy.Animation.SetJumpCharge(value);
         }
     }
 
-    protected virtual void OnDisable()
+    protected override void OnDisable()
     {
         if(jumpChargeRoutine != null)
         {
             StopCoroutine(jumpChargeRoutine);
             jumpChargeRoutine = null;
         }
+
+        base.OnDisable();
     }
 }

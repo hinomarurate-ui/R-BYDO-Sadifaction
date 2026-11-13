@@ -153,10 +153,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e538b32b4cf3412587b08aa6875a647d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  definition: {fileID: 0}
+  definition: {fileID: 11400000, guid: 8cbd2133cc22b854893de7a388935957, type: 2}
   groundSensor: {fileID: 0}
   ledgeSensor: {fileID: 4435991815497004318}
-  fallbackDefinition: {fileID: 11400000, guid: 8cbd2133cc22b854893de7a388935957, type: 2}
   health: {fileID: 4435991815434177049}
   movementOverride: {fileID: 0}
   isGroundedDebug: 0
@@ -346,8 +345,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemy: {fileID: 0}
-  enemyMove: {fileID: 0}
-  enemyAttack: {fileID: 0}
   enemyHP: {fileID: 0}
   bodyCollider: {fileID: 0}
   bodyRigidbody: {fileID: 0}

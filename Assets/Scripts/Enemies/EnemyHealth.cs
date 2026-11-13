@@ -166,7 +166,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 continue;
             }
 
-            if(behaviour is IEnemyMovement || behaviour is IEnemyAttackPattern || behaviour is IEnemyRoutine)
+            if(behaviour is IEnemyBehaviour)
             {
                 behaviour.enabled = false;
             }

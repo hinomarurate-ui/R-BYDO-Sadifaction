@@ -4,7 +4,6 @@ using UnityEngine.Serialization;
 
 public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPattern
 {
-    [SerializeField] bool useDefinitionSettings = true;
     [SerializeField] GameObject bulletPrefab;
     [SerializeField] Transform shotPoint;
     [SerializeField] float searchRange = 8f;
@@ -27,35 +26,26 @@ public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPatt
     [FormerlySerializedAs("As")]
     [SerializeField] AudioSource audioSource;
 
-    Transform player;
     float nextAttackTime;
 
     public EnemyAttackKind AttackKind { get { return EnemyAttackKind.MissileBurst; } }
 
-    public override void Initialize(EnemyController controller)
+    protected override void OnInitialized()
     {
-        base.Initialize(controller);
-        player = controller != null ? controller.Target : null;
-
         if(audioSource == null)
         {
-            audioSource = GetComponent<AudioSource>();
-        }
-
-        if(useDefinitionSettings)
-        {
-            ApplyDefinition(controller != null ? controller.Definition : null);
+            audioSource = CachedAudioSource;
         }
     }
 
     public bool CanAttack()
     {
-        if(player == null || Time.time < nextAttackTime || enemy == null || enemy.IsDead)
+        if(Target == null || Time.time < nextAttackTime || Enemy == null || Enemy.IsDead)
         {
             return false;
         }
 
-        return Vector2.Distance(transform.position, player.position) < searchRange;
+        return Vector2.Distance(transform.position, Target.position) < searchRange;
     }
 
     public IEnumerator Attack()
@@ -80,13 +70,13 @@ public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPatt
 
     IEnumerator ShotBurst()
     {
-        if(bulletPrefab == null || player == null)
+        if(bulletPrefab == null || Target == null)
         {
             yield break;
         }
 
         Vector3 origin = shotPoint != null ? shotPoint.position : transform.position;
-        Vector2 baseDirection = (player.position + Vector3.up * aimHeight - origin).normalized;
+        Vector2 baseDirection = (Target.position + Vector3.up * aimHeight - origin).normalized;
         int shots = Mathf.Max(0, bulletCount);
 
         for(int i = 0; i < shots; i++)
@@ -105,32 +95,11 @@ public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPatt
         }
     }
 
-    void ApplyDefinition(EnemyDefinition definition)
-    {
-        if(definition == null || definition.Attack == null)
-        {
-            return;
-        }
-
-        EnemyDefinition.AttackSettings settings = definition.Attack;
-        searchRange = settings.searchRange;
-        attackCooldown = settings.attackCooldown;
-        shotChargeTime = settings.chargeTime;
-        attackEndTime = settings.endTime;
-        bulletSpeed = settings.bulletSpeed;
-        bulletLifeTime = settings.bulletLifeTime;
-        bulletCount = settings.bulletCount;
-        bulletAngleSpacing = settings.bulletAngleSpacing;
-        bulletInterval = settings.bulletInterval;
-        bulletDamage = settings.bulletDamage;
-        aimHeight = settings.aimHeight;
-    }
-
     void SetShotAnimation(bool enabled)
     {
-        if(enemy != null && enemy.Animation != null)
+        if(Enemy != null && Enemy.Animation != null)
         {
-            enemy.Animation.SetShot(enabled);
+            Enemy.Animation.SetShot(enabled);
         }
     }
 
@@ -142,11 +111,4 @@ public class MissileBurstAttackController : StationaryMovement, IEnemyAttackPatt
         }
     }
 
-    static IEnumerator WaitIfPositive(float duration)
-    {
-        if(duration > 0f)
-        {
-            yield return new WaitForSeconds(duration);
-        }
-    }
 }

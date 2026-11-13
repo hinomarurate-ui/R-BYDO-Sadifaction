@@ -289,7 +289,6 @@ MonoBehaviour:
   definition: {fileID: 11400000, guid: df21d33a895ee214590c74cc394e4d80, type: 2}
   groundSensor: {fileID: 0}
   ledgeSensor: {fileID: 0}
-  fallbackDefinition: {fileID: 0}
   health: {fileID: 2627126529114559407}
   movementOverride: {fileID: 7274866251674149783}
   isGroundedDebug: 0

@@ -1,44 +1,39 @@
 using UnityEngine;
 
-public class SkaleyFlyingMove : MonoBehaviour, IEnemyMovement
+public class SkaleyFlyingMove : EnemyBehaviourBase, IEnemyMovement
 {
     [SerializeField] float horizontalRange = 3f;
     [SerializeField] float verticalRange = 1f;
     [SerializeField] float horizontalSpeed = 1f;
     [SerializeField] float verticalSpeed = 1.4f;
 
-    Rigidbody2D body;
     Vector2 centerPosition;
     float horizontalAngle;
     float verticalAngle;
     float originalGravityScale;
     RigidbodyConstraints2D originalConstraints;
-    bool initialized;
-
-    public void Initialize(EnemyController controller)
+    protected override void OnInitialized()
     {
-        body = GetComponent<Rigidbody2D>();
-        centerPosition = body != null ? body.position : (Vector2)transform.position;
+        centerPosition = Body != null ? Body.position : (Vector2)transform.position;
 
-        if(body != null && !initialized)
+        if(Body != null)
         {
-            originalGravityScale = body.gravityScale;
-            originalConstraints = body.constraints;
-        }        
+            originalGravityScale = Body.gravityScale;
+            originalConstraints = Body.constraints;
+        }
 
-        initialized = true;
         StartFloating();
     }
 
     // Update is called once per frame
     public bool Tick()
     {
-        return body != null;
+        return Body != null;
     }
 
     public void FixedTick()
     {
-        if(body == null)
+        if(Body == null)
         {
             return;
         }
@@ -50,41 +45,37 @@ public class SkaleyFlyingMove : MonoBehaviour, IEnemyMovement
             Mathf.Sin(horizontalAngle) * horizontalRange,
             Mathf.Sin(verticalAngle) * verticalRange);
 
-            body.MovePosition(centerPosition + offset);
+        Body.MovePosition(centerPosition + offset);
     }
 
     public void Stop()
     {
-        if(body != null)
-        {
-            body.velocity = Vector2.zero;
-        }
+        StopBodyVelocity();
     }
 
-    void OnEnable()
+    protected override void OnBehaviourEnabled()
     {
         StartFloating();
     }
 
-    void OnDisable()
+    protected override void OnBehaviourDisabled()
     {
-        if(body != null && !initialized)
+        if(Body != null)
         {
-            originalGravityScale = body.gravityScale;
-            originalConstraints = body.constraints;
-        }  
+            Body.velocity = Vector2.zero;
+        }
     }
 
     void StartFloating()
     {
-        if(body == null)
+        if(Body == null)
         {
             return;
         }
 
-        body.gravityScale = 0f;
-        body.constraints = originalConstraints | RigidbodyConstraints2D.FreezeRotation;
-        body.velocity = Vector2.zero;
+        Body.gravityScale = 0f;
+        Body.constraints = originalConstraints | RigidbodyConstraints2D.FreezeRotation;
+        Body.velocity = Vector2.zero;
         
     }
 }
